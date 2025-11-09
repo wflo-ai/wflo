@@ -1,0 +1,215 @@
+[tool.poetry]
+name = "wflo"
+version = "0.1.0"
+description = "The secure runtime for AI agents - production-ready infrastructure with sandboxed execution, cost governance, and full observability"
+authors = ["Wflo Team <team@wflo.ai>"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://wflo.ai"
+repository = "https://github.com/wflo-ai/wflo"
+documentation = "https://docs.wflo.ai"
+keywords = ["ai", "agents", "workflow", "orchestration", "sandbox", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+packages = [{include = "wflo", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Workflow orchestration
+temporalio = "^1.5.0"
+# Event streaming
+confluent-kafka = "^2.3.0"
+# Sandbox execution
+aiodocker = "^0.21.0"
+# Database
+asyncpg = "^0.29.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.0"}
+alembic = "^1.13.0"
+# Cache and distributed locks
+redis = {extras = ["asyncio"], version = "^5.0.0"}
+# Configuration
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+python-dotenv = "^1.0.0"
+# Cost tracking
+tokencost = "^0.1.0"
+tiktoken = "^0.6.0"
+# Observability
+opentelemetry-api = "^1.21.0"
+opentelemetry-sdk = "^1.21.0"
+opentelemetry-instrumentation = "^0.42b0"
+opentelemetry-instrumentation-sqlalchemy = "^0.42b0"
+opentelemetry-instrumentation-aiohttp-client = "^0.42b0"
+prometheus-client = "^0.19.0"
+structlog = "^24.1.0"
+# HTTP client
+aiohttp = "^3.9.0"
+# Utilities
+typing-extensions = "^4.9.0"
+
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+pytest-timeout = "^2.2.0"
+pytest-xdist = "^3.5.0"
+# Code quality
+ruff = "^0.1.0"
+black = "^24.0.0"
+mypy = "^1.8.0"
+# Type stubs
+types-redis = "^4.6.0"
+types-aiofiles = "^23.2.0"
+# Documentation
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.5.0"
+# Development utilities
+ipython = "^8.20.0"
+ipdb = "^0.13.13"
+
+[tool.poetry.scripts]
+wflo = "wflo.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+[tool.ruff.isort]
+known-first-party = ["wflo"]
+
+# Black configuration
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "normal"
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = [
+    "temporalio.*",
+    "confluent_kafka.*",
+    "aiodocker.*",
+    "tokencost.*",
+    "tiktoken.*",
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=wflo",
+    "--cov-report=html",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-fail-under=80",
+]
+markers = [
+    "unit: Unit tests (no external dependencies)",
+    "integration: Integration tests (requires Docker services)",
+    "e2e: End-to-end tests (full workflow execution)",
+    "slow: Tests that take a long time to run",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src"]
+branch = true
+parallel = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "@abc.abstractmethod",
+]
