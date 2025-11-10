@@ -109,6 +109,22 @@ function HomepageHeader() {
         >
           ⚠️ Early Development - Not production ready yet
         </motion.div>
+        <motion.div
+          className={styles.badgeContainer}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        >
+          <a href="https://github.com/wflo-ai/wflo" target="_blank" rel="noopener noreferrer" className={styles.badge}>
+            <img src="https://img.shields.io/github/stars/wflo-ai/wflo?style=social" alt="GitHub stars" />
+          </a>
+          <a href="https://github.com/wflo-ai/wflo/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className={styles.badge}>
+            <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License" />
+          </a>
+          <a href="https://github.com/wflo-ai/wflo" target="_blank" rel="noopener noreferrer" className={styles.badge}>
+            <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
+          </a>
+        </motion.div>
       </div>
     </header>
   );
