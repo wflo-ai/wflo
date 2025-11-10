@@ -110,28 +110,28 @@ echo "🔌 Testing Service Connections..."
 echo "---------------------------------"
 
 # Test PostgreSQL
-if docker-compose exec -T postgres pg_isready -U wflo_user -d wflo >/dev/null 2>&1; then
+if $COMPOSE_CMD exec -T postgres pg_isready -U wflo_user -d wflo >/dev/null 2>&1; then
     success "PostgreSQL connection OK"
 else
     error "PostgreSQL connection failed"
 fi
 
 # Test Redis
-if docker-compose exec -T redis redis-cli ping >/dev/null 2>&1; then
+if $COMPOSE_CMD exec -T redis redis-cli ping >/dev/null 2>&1; then
     success "Redis connection OK"
 else
     error "Redis connection failed"
 fi
 
 # Test Kafka (check if topics exist)
-if docker-compose exec -T kafka kafka-topics --list --bootstrap-server localhost:9092 >/dev/null 2>&1; then
+if $COMPOSE_CMD exec -T kafka kafka-topics --list --bootstrap-server localhost:9092 >/dev/null 2>&1; then
     success "Kafka connection OK"
 else
     warning "Kafka connection failed (may still be starting up)"
 fi
 
 # Test Temporal
-if docker-compose exec -T temporal tctl cluster health >/dev/null 2>&1; then
+if $COMPOSE_CMD exec -T temporal tctl --address temporal:7233 cluster health >/dev/null 2>&1; then
     success "Temporal connection OK"
 else
     warning "Temporal connection failed (may still be starting up)"
@@ -178,7 +178,7 @@ if [ -f "alembic.ini" ]; then
     success "Alembic configuration found"
 
     # Check if tables exist
-    if docker-compose exec -T postgres psql -U wflo_user -d wflo -c "SELECT COUNT(*) FROM workflow_definitions;" >/dev/null 2>&1; then
+    if $COMPOSE_CMD exec -T postgres psql -U wflo_user -d wflo -c "SELECT COUNT(*) FROM workflow_definitions;" >/dev/null 2>&1; then
         success "Database tables exist"
     else
         warning "Database tables not found"
