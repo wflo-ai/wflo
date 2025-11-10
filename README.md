@@ -155,100 +155,85 @@ result = await workflow.run(
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- **Python 3.11 or 3.12** (Python 3.13 not supported yet - see PYTHON_VERSION_FIX.md)
-- Poetry (for dependency management)
+- **Docker & Docker Compose** - For running infrastructure services
+- **Python 3.11 or 3.12** - ⚠️ Python 3.13 not supported (asyncpg incompatibility)
+- **Poetry** - Python dependency management
 
-### 1. Clone and Install
+**Python 3.13 Users**: If you have Python 3.13, switch to 3.11 or 3.12:
+```bash
+# macOS/Linux
+brew install python@3.11  # or use pyenv
+poetry env use python3.11
+
+# Verify version
+poetry run python --version  # Should show Python 3.11.x or 3.12.x
+```
+
+### Quick Start
 
 ```bash
-# Clone repository
+# 1. Clone and install dependencies
 git clone https://github.com/wflo-ai/wflo.git
 cd wflo
-
-# Install dependencies
 poetry install
-```
 
-### 2. Start Infrastructure Services
+# 2. Start infrastructure services
+docker compose up -d
 
-```bash
-# Start all services (PostgreSQL, Redis, Kafka, Temporal, Jaeger)
-docker-compose up -d
-
-# Check service health
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-```
-
-Services running:
-- **PostgreSQL**: `localhost:5432`
-- **Redis**: `localhost:6379`
-- **Kafka**: `localhost:9092`
-- **Temporal**: `localhost:7233` (gRPC) | `localhost:8233` (Web UI)
-- **Jaeger**: `localhost:16686` (Web UI)
-
-### 3. Initialize Database
-
-```bash
-# Run database migrations
+# 3. Wait for services to initialize (30-60 seconds)
+# Then run database migrations
 poetry run alembic upgrade head
 
-# (Optional) Seed test data
-poetry run python scripts/seed_data.py
+# 4. Verify setup
+./scripts/verify_setup.sh
+
+# 5. Run integration tests
+./scripts/run_tests.sh integration
 ```
 
-### 4. Run Tests
+### Infrastructure Services
 
+After `docker compose up -d`, the following services will be available:
+
+| Service | Port | Purpose | UI |
+|---------|------|---------|-----|
+| PostgreSQL | 5432 | Workflow metadata, execution history | - |
+| Redis | 6379 | Caching, distributed locks | - |
+| Kafka | 9092 | Event streaming | - |
+| Temporal | 7233 | Workflow orchestration (gRPC) | http://localhost:8233 |
+| Jaeger | 16686 | Distributed tracing | http://localhost:16686 |
+
+**Check service health:**
 ```bash
-# Run all tests
-poetry run pytest
-
-# Run only unit tests (fast)
-poetry run pytest tests/unit/ -v
-
-# Run integration tests (requires Docker services)
-poetry run pytest tests/integration/ -v
-
-# Run with coverage
-poetry run pytest --cov=wflo --cov-report=html
+docker compose ps  # All should show "Up (healthy)"
 ```
 
-### 5. Run Temporal Worker
+### Running Workflows
 
 ```bash
-# Start Temporal worker (processes workflows)
-poetry run python -m wflo.temporal.worker
-```
-
-## Running the Application
-
-### Option 1: Development Mode
-
-```bash
-# Terminal 1: Start infrastructure
-docker-compose up -d
-
-# Terminal 2: Start Temporal worker
+# Terminal 1: Start Temporal worker
 poetry run python -m wflo.temporal.worker
 
-# Terminal 3: Run workflows
+# Terminal 2: Execute a workflow
 poetry run python examples/simple_workflow.py
 ```
 
-### Option 2: Full Stack
+### Running Tests
 
 ```bash
-# Start everything
-docker-compose up -d
+# Quick verification (all integration tests)
+./scripts/run_tests.sh integration
 
-# Access services
-# - Temporal UI: http://localhost:8233
-# - Jaeger UI: http://localhost:16686
-# - Prometheus: http://localhost:9090 (when configured)
+# Individual test suites
+poetry run pytest tests/integration/test_redis.py -v      # Redis tests
+poetry run pytest tests/integration/test_kafka.py -v      # Kafka tests
+poetry run pytest tests/integration/test_database.py -v   # Database tests
+
+# All tests with coverage
+poetry run pytest --cov=wflo --cov-report=html
 ```
+
+See [TESTING.md](TESTING.md) for detailed testing guide.
 
 ## Current Implementation Status
 
