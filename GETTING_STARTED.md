@@ -2,12 +2,18 @@
 
 This guide will walk you through setting up Wflo locally and running your first workflow.
 
+## ⚠️ Important: Python Version
+
+**Use Python 3.11 or 3.12 only.** Python 3.13 is not yet supported due to asyncpg compatibility.
+
+If you have Python 3.13, see **PYTHON_VERSION_FIX.md** for detailed instructions on switching to Python 3.11 or 3.12.
+
 ## Prerequisites
 
 ### Required Software
 
 - **Docker Desktop** (v24.0+)
-- **Python** (3.11 or higher)
+- **Python 3.11 or 3.12** (NOT 3.13)
 - **Poetry** (Python dependency manager)
 
 ### Install Prerequisites
