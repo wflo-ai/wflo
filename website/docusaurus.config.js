@@ -118,7 +118,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Apache 2.0 License • Built with Docusaurus`,
+        copyright: `Apache 2.0 License © ${new Date().getFullYear()} Wflo`,
       },
       prism: {
         theme: lightCodeTheme,
