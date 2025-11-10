@@ -54,12 +54,14 @@ description: "Wflo - The secure runtime for AI agents. Production-ready infrastr
   </div>
 </section>
 
-<section>
-  <div class="container">
-    <h2>Core Features</h2>
+<section markdown="1">
+<div class="container" markdown="1">
 
-    <h3>🛡️ Sandboxed Execution</h3>
-    <p>Every workflow runs in an isolated container environment with strict resource limits. No agent can access your host system or escape its sandbox.</p>
+## Core Features
+
+### 🛡️ Sandboxed Execution
+
+Every workflow runs in an isolated container environment with strict resource limits. No agent can access your host system or escape its sandbox.
 
 ```python
 workflow.configure_sandbox(
@@ -70,8 +72,9 @@ workflow.configure_sandbox(
 )
 ```
 
-    <h3>✋ Human Approval Gates</h3>
-    <p>Pause workflows at critical checkpoints and require human approval before proceeding. Define who can approve, set timeouts, and configure escalation policies.</p>
+### ✋ Human Approval Gates
+
+Pause workflows at critical checkpoints and require human approval before proceeding. Define who can approve, set timeouts, and configure escalation policies.
 
 ```python
 @workflow.step(
@@ -86,8 +89,9 @@ async def delete_production_data(context):
     await context.db.execute("DELETE FROM ...")
 ```
 
-    <h3>💰 Cost Governance</h3>
-    <p>Real-time cost tracking across all LLM providers with automatic budget enforcement. Set spending limits and get alerted before you exceed them.</p>
+### 💰 Cost Governance
+
+Real-time cost tracking across all LLM providers with automatic budget enforcement. Set spending limits and get alerted before you exceed them.
 
 ```python
 workflow.set_budget(
@@ -97,8 +101,9 @@ workflow.set_budget(
 )
 ```
 
-    <h3>⏮️ Rollback & Recovery</h3>
-    <p>Automatic state snapshots before critical operations. Roll back to any previous state if something goes wrong.</p>
+### ⏮️ Rollback & Recovery
+
+Automatic state snapshots before critical operations. Roll back to any previous state if something goes wrong.
 
 ```python
 @workflow.step(rollback_enabled=True)
@@ -108,8 +113,9 @@ async def update_database(context):
     # Auto-rollback on failure
 ```
 
-    <h3>📈 Full Observability</h3>
-    <p>Distributed tracing, metrics, and structured logging for every workflow execution. Know exactly what your agents are doing.</p>
+### 📈 Full Observability
+
+Distributed tracing, metrics, and structured logging for every workflow execution. Know exactly what your agents are doing.
 
 ```python
 # Every operation is traced
@@ -119,12 +125,13 @@ async def update_database(context):
 - Error details and stack traces
 ```
 
-  </div>
+</div>
 </section>
 
-<section id="quick-start">
-  <div class="container">
-    <h2>Quick Start</h2>
+<section markdown="1" id="quick-start">
+<div class="container" markdown="1">
+
+## Quick Start
 
 ```bash
 # Install
@@ -137,7 +144,7 @@ wflo init my-agent-workflow
 wflo run --budget 10.00 --require-approval
 ```
 
-    <h3>Example Workflow</h3>
+### Example Workflow
 
 ```python
 from wflo import Workflow
@@ -176,12 +183,13 @@ async def apply_changes(context):
     return {"applied": True}
 ```
 
-  </div>
+</div>
 </section>
 
-<section>
-  <div class="container">
-    <h2>Architecture</h2>
+<section markdown="1">
+<div class="container" markdown="1">
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -204,7 +212,7 @@ async def apply_changes(context):
     └─────────────┘  └─────────────┘
 ```
 
-  </div>
+</div>
 </section>
 
 <section>
@@ -254,38 +262,37 @@ async def apply_changes(context):
   </div>
 </section>
 
-<section>
-  <div class="container">
-    <h2>Roadmap</h2>
+<section markdown="1">
+<div class="container" markdown="1">
 
-    <h3>Phase 1: Foundation (Current)</h3>
-    <ul>
-      <li>✅ Project setup and architecture design</li>
-      <li>Core workflow engine</li>
-      <li>Sandbox execution</li>
-      <li>Basic observability</li>
-      <li>Python SDK</li>
-    </ul>
+## Roadmap
 
-    <h3>Phase 2: Safety & Governance</h3>
-    <ul>
-      <li>Human approval gates</li>
-      <li>Cost tracking and budget enforcement</li>
-      <li>Policy engine</li>
-      <li>Rollback capabilities</li>
-    </ul>
+### Phase 1: Foundation (Current)
 
-    <h3>Phase 3: Production Ready</h3>
-    <ul>
-      <li>Multi-agent orchestration</li>
-      <li>Advanced observability</li>
-      <li>Compliance features (SOC2, HIPAA)</li>
-      <li>TypeScript/JavaScript SDK</li>
-      <li>Hosted cloud platform</li>
-    </ul>
+- ✅ Project setup and architecture design
+- Core workflow engine
+- Sandbox execution
+- Basic observability
+- Python SDK
 
-    <div class="status-badge">Early Development - Not production ready yet</div>
-  </div>
+### Phase 2: Safety & Governance
+
+- Human approval gates
+- Cost tracking and budget enforcement
+- Policy engine
+- Rollback capabilities
+
+### Phase 3: Production Ready
+
+- Multi-agent orchestration
+- Advanced observability
+- Compliance features (SOC2, HIPAA)
+- TypeScript/JavaScript SDK
+- Hosted cloud platform
+
+<div class="status-badge">Early Development - Not production ready yet</div>
+
+</div>
 </section>
 
 <section>
