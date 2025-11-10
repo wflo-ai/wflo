@@ -99,6 +99,7 @@ Integration tests are organized by component:
 - `test_database.py` - Database engine, ORM models, CRUD operations (15 tests)
 - `test_temporal.py` - Temporal workflows and activities (10+ tests)
 - `test_sandbox.py` - Sandboxed code execution with Docker (30+ tests)
+- `test_cost_tracking.py` - Cost tracking and budget management (11 tests)
 - `test_kafka.py` - Kafka producers and consumers (TODO)
 - `test_redis.py` - Redis caching and locks (TODO)
 
@@ -156,6 +157,28 @@ pytest tests/integration/test_sandbox.py -v -m "not slow"
 ```
 
 **Note:** Sandbox tests require Docker daemon to be running and accessible.
+
+#### test_cost_tracking.py (11 tests)
+Tests cost tracking and budget management:
+- Cost calculation for different LLM models (GPT-4, GPT-3.5, Claude)
+- Token counting and cost estimation
+- Database cost tracking and aggregation
+- Budget checking and enforcement
+- Multi-call cost accumulation
+
+```bash
+# Run cost tracking tests only
+pytest tests/integration/test_cost_tracking.py -v
+
+# Run specific test class
+pytest tests/integration/test_cost_tracking.py::TestCostTracker -v
+pytest tests/integration/test_cost_tracking.py::TestBudgetCheck -v
+```
+
+**Test Classes**:
+- `TestCostTracker` (6 tests) - Cost calculation and database tracking
+- `TestBudgetCheck` (3 tests) - Budget limit enforcement
+- `TestCostEstimation` (2 tests) - Cost estimation before execution
 
 ## Debugging Integration Tests
 

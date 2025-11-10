@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_env: Literal["development", "staging", "production"] = Field(
+    app_env: Literal["development", "staging", "production", "testing"] = Field(
         default="development",
         description="Application environment",
     )
@@ -53,6 +53,22 @@ class Settings(BaseSettings):
         ge=0,
         le=50,
         description="Maximum overflow connections",
+    )
+    database_echo: bool = Field(
+        default=False,
+        description="Enable SQL query logging for debugging",
+    )
+    database_pool_timeout: int = Field(
+        default=30,
+        ge=1,
+        le=300,
+        description="Pool timeout in seconds",
+    )
+    database_pool_recycle: int = Field(
+        default=3600,
+        ge=300,
+        le=7200,
+        description="Pool recycle time in seconds",
     )
 
     # Redis
