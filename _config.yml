@@ -1,0 +1,35 @@
+# Wflo Site Configuration
+title: Wflo
+description: The secure runtime for AI agents
+url: "https://wflo-ai.github.io"
+baseurl: "/wflo"
+
+# Theme
+theme: jekyll-theme-minimal
+remote_theme: pages-themes/minimal@v0.2.0
+
+# Build settings
+markdown: kramdown
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+# Exclude
+exclude:
+  - README.md
+  - LICENSE
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - src
+  - tests
+  - .git
+  - .github
+
+# Plugins
+plugins:
+  - jekyll-seo-tag
+  - jekyll-github-metadata
