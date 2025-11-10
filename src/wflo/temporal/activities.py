@@ -247,57 +247,49 @@ async def create_state_snapshot(
 @activity.defn
 async def track_cost(
     execution_id: str,
-    step_execution_id: str | None,
-    cost_usd: float,
+    model: str,
     prompt_tokens: int,
     completion_tokens: int,
-) -> None:
-    """Track cost for LLM API calls.
+    step_execution_id: str | None = None,
+) -> float:
+    """Track cost for LLM API calls using CostTracker.
 
     Args:
         execution_id: Workflow execution ID
-        step_execution_id: Step execution ID (if step-level tracking)
-        cost_usd: Cost in USD
+        model: LLM model name
         prompt_tokens: Number of prompt tokens
         completion_tokens: Number of completion tokens
+        step_execution_id: Step execution ID (if step-level tracking)
+
+    Returns:
+        float: Calculated cost in USD
     """
+    from wflo.cost import CostTracker, TokenUsage
+
     activity.logger.info(
-        f"Tracking cost for execution {execution_id}: ${cost_usd:.4f}",
+        f"Tracking cost for execution {execution_id}",
         extra={
+            "model": model,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
         },
     )
 
+    # Use CostTracker for consistent cost calculation and database tracking
     async for session in get_session():
-        from sqlalchemy import select
-
-        # Update workflow execution costs
-        result = await session.execute(
-            select(WorkflowExecutionModel).where(
-                WorkflowExecutionModel.id == execution_id
-            )
+        tracker = CostTracker()
+        usage = TokenUsage(
+            model=model,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
         )
-        execution = result.scalar_one()
 
-        execution.cost_total_usd += cost_usd
-        execution.cost_prompt_tokens += prompt_tokens
-        execution.cost_completion_tokens += completion_tokens
+        await tracker.track_cost(session, execution_id, usage, step_execution_id)
 
-        # Update step execution costs if provided
-        if step_execution_id:
-            result = await session.execute(
-                select(StepExecutionModel).where(
-                    StepExecutionModel.id == step_execution_id
-                )
-            )
-            step_execution = result.scalar_one()
-
-            step_execution.cost_usd += cost_usd
-            step_execution.prompt_tokens += prompt_tokens
-            step_execution.completion_tokens += completion_tokens
-
-        await session.commit()
+        # Return the calculated cost for logging/monitoring
+        cost = tracker.calculate_cost(usage)
+        activity.logger.info(f"Tracked ${cost:.4f} for execution {execution_id}")
+        return cost
 
 
 @activity.defn
