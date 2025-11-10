@@ -4,7 +4,7 @@
  * Color palette: Sophisticated teal/emerald with lavender accents
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap');
 
 :root {
   /* Primary brand colors - Teal to Emerald gradient inspired by LangChain */
