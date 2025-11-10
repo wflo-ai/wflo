@@ -54,6 +54,14 @@ test-unit: ## Run only unit tests
 test-integration: ## Run only integration tests (requires services running)
 	poetry run pytest tests/integration -v
 
+test-integration-setup: ## Setup test database for integration tests
+	./scripts/setup_test_db.sh
+
+test-integration-full: test-integration-setup test-integration ## Setup and run integration tests
+
+test-integration-clean: ## Cleanup test database
+	./scripts/cleanup_test_db.sh
+
 test-e2e: ## Run only end-to-end tests (requires services running)
 	poetry run pytest tests/e2e -v
 
