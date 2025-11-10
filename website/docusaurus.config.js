@@ -52,10 +52,6 @@ const config = {
       image: 'img/wflo-social-card.jpg',
       navbar: {
         title: 'wflo',
-        logo: {
-          alt: 'Wflo Logo',
-          src: 'img/logo.svg',
-        },
         items: [
           {
             type: 'docSidebar',
@@ -125,9 +121,9 @@ const config = {
         additionalLanguages: ['python', 'bash'],
       },
       colorMode: {
-        defaultMode: 'dark',
+        defaultMode: 'light',
         disableSwitch: false,
-        respectPrefersColorScheme: false,
+        respectPrefersColorScheme: true,
       },
     }),
 };
