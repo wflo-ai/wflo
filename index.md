@@ -1,148 +1,187 @@
 ---
 layout: default
 title: Home
-nav_order: 1
-description: "Wflo - The secure runtime for AI agents. Production-ready infrastructure for running AI agents safely with sandboxed execution, cost governance, and human approval gates."
-permalink: /
+description: "Wflo - The secure runtime for AI agents. Production-ready infrastructure for running AI agents safely."
 ---
 
-# Wflo
-{: .fs-9 }
+<div class="hero">
+  <div class="container">
+    <h1>wflo</h1>
+    <p class="tagline">The secure runtime for AI agents</p>
+    <p class="subtitle">Production-ready infrastructure for running AI agents safely with sandboxed execution, human approval gates, cost governance, and full observability.</p>
+    <div class="cta-buttons">
+      <a href="#quick-start" class="btn btn-primary">Get Started</a>
+      <a href="https://github.com/wflo-ai/wflo" class="btn btn-secondary">View on GitHub</a>
+    </div>
+  </div>
+</div>
 
-The secure runtime for AI agents
-{: .fs-6 .fw-300 }
+<section>
+  <div class="container">
+    <h2>The Problem</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">💸</div>
+        <h3>Runaway Costs</h3>
+        <p>One misconfigured agent can burn thousands in API fees before you notice.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Security Risks</h3>
+        <p>Agents executing arbitrary code without isolation puts your systems at risk.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚫</div>
+        <h3>Irreversible Actions</h3>
+        <p>No way to undo mistakes when agents make wrong decisions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>No Visibility</h3>
+        <p>Can't debug what agents actually did or why they made certain decisions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <h3>Compliance Gaps</h3>
+        <p>No audit trails or approval workflows for regulated industries.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>The Solution</h3>
+        <p>Wflo provides enterprise-grade safety controls for production AI workflows.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-Production-ready infrastructure for running AI agents safely: sandboxed execution, human approval gates, cost governance, rollback capabilities, and full observability.
-{: .fs-5 .fw-300 }
+<section>
+  <div class="container">
+    <h2>Core Features</h2>
 
-[Get Started](#quick-start){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View on GitHub](https://github.com/wflo-ai/wflo){: .btn .fs-5 .mb-4 .mb-md-0 }
+    <h3>🛡️ Sandboxed Execution</h3>
+    <p>Every workflow runs in an isolated container environment with strict resource limits. No agent can access your host system or escape its sandbox.</p>
 
----
+```python
+workflow.configure_sandbox(
+    memory_limit="512m",
+    cpu_limit="0.5",
+    network_enabled=False,
+    timeout_seconds=300
+)
+```
 
-## Why Wflo?
+    <h3>✋ Human Approval Gates</h3>
+    <p>Pause workflows at critical checkpoints and require human approval before proceeding. Define who can approve, set timeouts, and configure escalation policies.</p>
 
-AI agents are powerful, but running them in production is risky:
+```python
+@workflow.step(
+    approval=ApprovalPolicy(
+        required=True,
+        approvers=["ops-team"],
+        notify=["slack://ops-channel"]
+    )
+)
+async def delete_production_data(context):
+    # Execution pauses here for approval
+    await context.db.execute("DELETE FROM ...")
+```
 
-| Problem | Impact |
-|:--------|:-------|
-| 💸 **Runaway costs** | One misconfigured agent can burn thousands in API fees |
-| 🔒 **Security concerns** | Agents executing arbitrary code without isolation |
-| 🚫 **Irreversible actions** | No way to undo agent mistakes |
-| 📊 **Poor observability** | Can't debug what agents actually did |
-| ⚖️ **Compliance gaps** | No audit trails for regulated industries |
+    <h3>💰 Cost Governance</h3>
+    <p>Real-time cost tracking across all LLM providers with automatic budget enforcement. Set spending limits and get alerted before you exceed them.</p>
 
-**Wflo solves these problems.**
+```python
+workflow.set_budget(
+    max_cost_usd=50.00,
+    alert_thresholds=[0.5, 0.75, 0.9],
+    action_on_exceeded="halt"
+)
+```
 
----
+    <h3>⏮️ Rollback & Recovery</h3>
+    <p>Automatic state snapshots before critical operations. Roll back to any previous state if something goes wrong.</p>
 
-## Core Features
+```python
+@workflow.step(rollback_enabled=True)
+async def update_database(context):
+    # Snapshot created automatically
+    await context.db.update(records)
+    # Auto-rollback on failure
+```
 
-### 🛡️ Sandboxed Execution
+    <h3>📈 Full Observability</h3>
+    <p>Distributed tracing, metrics, and structured logging for every workflow execution. Know exactly what your agents are doing.</p>
 
-- Isolated container environments for each agent workflow
-- Resource limits (CPU, memory, network)
-- Filesystem isolation and security policies
-- Based on proven container isolation technology
+```python
+# Every operation is traced
+- Workflow execution timeline
+- LLM API calls with costs
+- Database queries
+- Error details and stack traces
+```
 
-[Learn more →](docs/features#sandboxed-execution)
+  </div>
+</section>
 
-### ✋ Human Approval Gates
-
-- Configurable checkpoints before critical operations
-- Risk-based approval routing (auto-approve low-risk, require human for high-risk)
-- Approval timeout policies and escalation
-- Complete audit trail of all approvals/rejections
-
-[Learn more →](docs/features#approval-gates)
-
-### 💰 Cost Governance
-
-- Budget limits per workflow, agent, or time period
-- Real-time cost tracking and alerts
-- Circuit breakers when budgets exceeded
-- Multi-provider cost attribution and optimization
-
-[Learn more →](docs/features#cost-governance)
-
-### ⏮️ Rollback & Recovery
-
-- State snapshots before critical operations
-- Automatic rollback on failures
-- Compensating transactions for external APIs
-- Point-in-time recovery capabilities
-
-[Learn more →](docs/features#rollback-recovery)
-
-### 📈 Full Observability
-
-- Complete execution traces for every agent action
-- Real-time metrics: latency, cost, token usage
-- Structured logs with correlation IDs
-- Integration with popular observability tools
-
-[Learn more →](docs/features#observability)
-
----
-
-## Quick Start
+<section id="quick-start">
+  <div class="container">
+    <h2>Quick Start</h2>
 
 ```bash
-# Install Wflo CLI
+# Install
 pip install wflo
 
-# Initialize a new workflow
+# Create workflow
 wflo init my-agent-workflow
 
 # Run with safety controls
 wflo run --budget 10.00 --require-approval
 ```
 
-[Full getting started guide →](docs/getting-started)
-
----
-
-## Example: Safe Agent Workflow
+    <h3>Example Workflow</h3>
 
 ```python
-from wflo import Workflow, ApprovalGate, CostLimit
+from wflo import Workflow
 
-# Define a workflow with built-in safety
 workflow = Workflow("data-processor")
+workflow.set_budget(max_cost_usd=25.00)
 
-# Set cost budget
-workflow.set_budget(max_cost_usd=50.00)
+@workflow.step
+async def fetch_data(context):
+    """Fetch data from database"""
+    results = await context.db.query(context.inputs["query"])
+    return {"data": results}
 
-# Add approval gate before destructive operations
-@workflow.step(approval_required=True)
-async def delete_old_records(context):
-    """This will pause and wait for human approval"""
-    await context.db.execute("DELETE FROM records WHERE age > 365")
+@workflow.step(depends_on=["fetch_data"])
+async def analyze_with_ai(context):
+    """Analyze with LLM"""
+    data = context.steps["fetch_data"].output["data"]
 
-# Add rollback capability
-@workflow.step(rollback_enabled=True)
-async def update_production_data(context):
-    """Automatic rollback on failure"""
-    snapshot = await context.db.snapshot()
-    try:
-        await context.db.bulk_update(records)
-    except Exception:
-        await context.db.restore(snapshot)
-        raise
+    analysis = await context.llm.complete(
+        model="gpt-4",
+        prompt=f"Analyze: {data}"
+    )
 
-# Run with observability
-result = await workflow.run(
-    sandbox=True,           # Run in isolated container
-    trace=True,            # Full execution tracing
-    notify="slack://prod"  # Alert on approval needed
+    return {"analysis": analysis.text, "cost": analysis.cost}
+
+@workflow.step(
+    depends_on=["analyze_with_ai"],
+    approval=ApprovalPolicy(required=True),
+    rollback_enabled=True
 )
+async def apply_changes(context):
+    """Apply changes (requires approval + rollback)"""
+    # Execution pauses for approval
+    # Auto-rollback if fails
+    await context.db.execute(changes)
+    return {"applied": True}
 ```
 
-[See more examples →](docs/examples)
+  </div>
+</section>
 
----
-
-## Architecture
+<section>
+  <div class="container">
+    <h2>Architecture</h2>
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -155,7 +194,6 @@ result = await workflow.run(
 │                                             │
 │  ┌──────────────────────────────────────┐  │
 │  │      Observability Layer              │  │
-│  │  (Traces, Metrics, Logs, Audit)      │  │
 │  └──────────────────────────────────────┘  │
 └─────────────────────────────────────────────┘
            │                │
@@ -166,93 +204,110 @@ result = await workflow.run(
     └─────────────┘  └─────────────┘
 ```
 
-[Full architecture documentation →](docs/architecture)
+  </div>
+</section>
 
----
+<section>
+  <div class="container">
+    <h2>Use Cases</h2>
 
-## Use Cases
+    <table>
+      <thead>
+        <tr>
+          <th>Industry</th>
+          <th>Use Case</th>
+          <th>Key Feature</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Financial Services</td>
+          <td>Fraud detection with approval gates</td>
+          <td>Human review before blocking accounts</td>
+        </tr>
+        <tr>
+          <td>Healthcare</td>
+          <td>Clinical decision support</td>
+          <td>HIPAA-compliant audit trails</td>
+        </tr>
+        <tr>
+          <td>E-commerce</td>
+          <td>Customer service automation</td>
+          <td>Approval required for refunds</td>
+        </tr>
+        <tr>
+          <td>Data Engineering</td>
+          <td>ETL pipelines</td>
+          <td>Rollback on data quality issues</td>
+        </tr>
+        <tr>
+          <td>DevOps</td>
+          <td>Infrastructure automation</td>
+          <td>Approval gates for prod changes</td>
+        </tr>
+      </tbody>
+    </table>
 
-- **Financial Services**: Run fraud detection agents with mandatory approval gates
-- **Healthcare**: HIPAA-compliant agent workflows with full audit trails
-- **E-commerce**: Customer service automation with cost controls
-- **Data Processing**: ETL agents with rollback on failures
-- **DevOps**: Infrastructure automation with human oversight
+    <p style="text-align: center; margin-top: 2rem;">
+      <a href="{{ '/docs/use-cases' | relative_url }}" class="btn btn-secondary">View All Use Cases →</a>
+    </p>
+  </div>
+</section>
 
-[Explore use cases →](docs/use-cases)
+<section>
+  <div class="container">
+    <h2>Roadmap</h2>
 
----
+    <h3>Phase 1: Foundation (Current)</h3>
+    <ul>
+      <li>✅ Project setup and architecture design</li>
+      <li>Core workflow engine</li>
+      <li>Sandbox execution</li>
+      <li>Basic observability</li>
+      <li>Python SDK</li>
+    </ul>
 
-## Roadmap
+    <h3>Phase 2: Safety & Governance</h3>
+    <ul>
+      <li>Human approval gates</li>
+      <li>Cost tracking and budget enforcement</li>
+      <li>Policy engine</li>
+      <li>Rollback capabilities</li>
+    </ul>
 
-### Phase 1: Foundation (Current)
-- [x] Project setup and architecture design
-- [ ] Core workflow engine
-- [ ] Sandbox execution (Docker/E2B integration)
-- [ ] Basic observability (traces, logs)
-- [ ] Python SDK
+    <h3>Phase 3: Production Ready</h3>
+    <ul>
+      <li>Multi-agent orchestration</li>
+      <li>Advanced observability</li>
+      <li>Compliance features (SOC2, HIPAA)</li>
+      <li>TypeScript/JavaScript SDK</li>
+      <li>Hosted cloud platform</li>
+    </ul>
 
-### Phase 2: Safety & Governance
-- [ ] Human approval gates (API + UI)
-- [ ] Cost tracking and budget enforcement
-- [ ] Policy engine (define approval rules)
-- [ ] Rollback for state operations
+    <div class="status-badge">Early Development - Not production ready yet</div>
+  </div>
+</section>
 
-### Phase 3: Production Ready
-- [ ] Multi-agent orchestration
-- [ ] Advanced observability (OpenTelemetry)
-- [ ] Compliance features (SOC2, HIPAA audit logs)
-- [ ] TypeScript/JavaScript SDK
-- [ ] Cloud platform (hosted service)
+<section>
+  <div class="container">
+    <h2>Community</h2>
 
----
-
-## Philosophy
-
-We believe AI agents should be:
-
-- **Safe by default** - Not bolted on as an afterthought
-- **Production-ready** - Not just demos and prototypes
-- **Observable** - You should know exactly what agents are doing
-- **Governable** - Compliance and cost controls from day one
-- **Recoverable** - Mistakes should be fixable, not fatal
-
----
-
-## Community
-
-- **GitHub Discussions**: [Share ideas and ask questions](https://github.com/wflo-ai/wflo/discussions)
-- **Issues**: [Report bugs or request features](https://github.com/wflo-ai/wflo/issues)
-- **Discord**: Join our community (coming soon)
-- **Twitter**: [@wflo_ai](https://twitter.com/wflo_ai) (coming soon)
-
----
-
-## Contributing
-
-We welcome contributions! Wflo is open-source and community-driven.
-
-[Read the contributing guide →](docs/contributing)
-
----
-
-## Status
-
-🚧 **Early Development** - Not production ready yet
-
-We're actively building in public. Star the repo to follow our progress!
-
----
-
-## License
-
-Apache 2.0 - See [LICENSE](https://github.com/wflo-ai/wflo/blob/main/LICENSE) for details.
-
----
-
-## Acknowledgments
-
-Built with inspiration from:
-- **Kubernetes** - Container orchestration patterns
-- **Temporal** - Durable workflow execution
-- **LangChain/LangGraph** - Agent framework ecosystem
-- **E2B** - Secure code execution sandboxes
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Discussions</h3>
+        <p><a href="https://github.com/wflo-ai/wflo/discussions">Share ideas and ask questions</a></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🐛</div>
+        <h3>Issues</h3>
+        <p><a href="https://github.com/wflo-ai/wflo/issues">Report bugs or request features</a></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <h3>Contributing</h3>
+        <p><a href="{{ '/docs/contributing' | relative_url }}">Help build the future of AI safety</a></p>
+      </div>
+    </div>
+  </div>
+</section>

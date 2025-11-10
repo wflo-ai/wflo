@@ -1,22 +1,14 @@
 ---
 layout: default
 title: Examples
-nav_order: 5
 description: "Code examples and tutorials for building workflows with Wflo"
-permalink: /docs/examples
 ---
 
+<div class="container" style="margin-top: 3rem;">
+
 # Examples
-{: .no_toc }
 
 Practical code examples to help you build production-ready AI agent workflows.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -784,3 +776,4 @@ async def test_approval_workflow():
 - [API Reference](api-reference) - Complete API documentation
 - [Use Cases](use-cases) - Real-world applications
 - [Best Practices](best-practices) - Production deployment tips
+</div>

@@ -1,24 +1,14 @@
 ---
 layout: default
 title: Features
-nav_order: 2
 description: "Comprehensive overview of Wflo's core features for secure AI agent orchestration"
-permalink: /docs/features
 ---
+
+<div class="container" style="margin-top: 3rem;">
 
 # Features
-{: .no_toc }
 
-Wflo provides production-grade infrastructure for running AI agents safely and reliably.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
+Production-grade infrastructure for running AI agents safely and reliably.
 
 ## Sandboxed Execution
 
@@ -456,4 +446,5 @@ Wflo integrates with popular tools and services:
 - [Getting Started Guide](getting-started) - Set up your first workflow
 - [Architecture](architecture) - Understand how Wflo works
 - [Examples](examples) - More code examples
-- [API Reference](api-reference) - Complete API documentation
+
+</div>

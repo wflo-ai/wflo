@@ -1,22 +1,14 @@
 ---
 layout: default
 title: Getting Started
-nav_order: 3
 description: "Quick start guide to building your first secure AI agent workflow with Wflo"
-permalink: /docs/getting-started
 ---
 
+<div class="container" style="margin-top: 3rem;">
+
 # Getting Started
-{: .no_toc }
 
 Get up and running with Wflo in minutes.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -561,3 +553,4 @@ Now that you've created your first workflow, explore more advanced features:
 - **GitHub Issues**: [github.com/wflo-ai/wflo/issues](https://github.com/wflo-ai/wflo/issues)
 - **Discussions**: [github.com/wflo-ai/wflo/discussions](https://github.com/wflo-ai/wflo/discussions)
 - **Discord**: Join our community (coming soon)
+</div>

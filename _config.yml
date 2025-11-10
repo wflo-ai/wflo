@@ -1,50 +1,12 @@
-# Wflo GitHub Pages Configuration
+# Wflo Site Configuration
 title: Wflo
-description: The secure runtime for AI agents - Production-ready infrastructure for safe AI agent workflows
+description: The secure runtime for AI agents
 url: "https://wflo-ai.github.io"
 baseurl: "/wflo"
 
 # Theme
-theme: jekyll-theme-cayman
-remote_theme: just-the-docs/just-the-docs
-
-# Color scheme
-color_scheme: dark
-
-# Logo
-logo: "/assets/images/wflo-logo.svg"
-
-# Search
-search_enabled: true
-search:
-  heading_level: 2
-  previews: 3
-  preview_words_before: 5
-  preview_words_after: 10
-  tokenizer_separator: /[\s/]+/
-  rel_url: true
-  button: false
-
-# Navigation
-nav_enabled: true
-nav_sort: case_insensitive
-
-# Footer
-footer_content: "Copyright &copy; 2025 Wflo. Apache 2.0 License."
-
-# Social links
-aux_links:
-  "GitHub":
-    - "https://github.com/wflo-ai/wflo"
-  "Discussions":
-    - "https://github.com/wflo-ai/wflo/discussions"
-
-# GitHub links
-gh_edit_link: true
-gh_edit_link_text: "Edit this page on GitHub"
-gh_edit_repository: "https://github.com/wflo-ai/wflo"
-gh_edit_branch: "main"
-gh_edit_view_mode: "edit"
+theme: jekyll-theme-minimal
+remote_theme: pages-themes/minimal@v0.2.0
 
 # Build settings
 markdown: kramdown
@@ -53,12 +15,6 @@ kramdown:
   syntax_highlighter_opts:
     block:
       line_numbers: false
-
-# Collections
-collections:
-  docs:
-    permalink: "/:collection/:path/"
-    output: true
 
 # Exclude
 exclude:
@@ -77,4 +33,3 @@ exclude:
 plugins:
   - jekyll-seo-tag
   - jekyll-github-metadata
-  - jekyll-include-cache

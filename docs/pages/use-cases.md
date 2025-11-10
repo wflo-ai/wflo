@@ -1,22 +1,14 @@
 ---
 layout: default
 title: Use Cases
-nav_order: 4
 description: "Real-world use cases and applications for Wflo in production environments"
-permalink: /docs/use-cases
 ---
 
+<div class="container" style="margin-top: 3rem;">
+
 # Use Cases
-{: .no_toc }
 
 Real-world applications of Wflo across different industries and scenarios.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -629,3 +621,4 @@ async def publish_findings(context):
 - [Getting Started](getting-started) - Build your first workflow
 - [Examples](examples) - More code examples
 - [Architecture](architecture) - How Wflo works
+</div>

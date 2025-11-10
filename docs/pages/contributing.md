@@ -1,22 +1,14 @@
 ---
 layout: default
 title: Contributing
-nav_order: 7
 description: "How to contribute to Wflo - the secure runtime for AI agents"
-permalink: /docs/contributing
 ---
 
+<div class="container" style="margin-top: 3rem;">
+
 # Contributing to Wflo
-{: .no_toc }
 
 Thank you for your interest in contributing to Wflo! We're building the secure runtime for AI agents, and we welcome contributions from the community.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -550,3 +542,4 @@ By contributing, you agree that your contributions will be licensed under the Ap
 **Thank you for helping make Wflo better!**
 
 We appreciate every contribution, no matter how small. Every bug report, feature request, documentation improvement, and code contribution helps make Wflo more robust and useful for everyone.
+</div>

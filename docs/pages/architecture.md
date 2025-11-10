@@ -1,22 +1,14 @@
 ---
 layout: default
 title: Architecture
-nav_order: 6
 description: "Technical architecture and design decisions for Wflo"
-permalink: /docs/architecture
 ---
 
+<div class="container" style="margin-top: 3rem;">
+
 # Architecture
-{: .no_toc }
 
 Technical architecture for the secure AI agent runtime.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -409,3 +401,4 @@ For detailed rationale on specific design decisions, see:
 
 **Last Updated**: 2025-11-09
 **Status**: Living Document - Updated as architecture evolves
+</div>
