@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
+import { TypeAnimation } from 'react-type-animation';
 import styles from './index.module.css';
 
 function HomepageHeader() {
@@ -11,7 +12,25 @@ function HomepageHeader() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className="container">
         <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
-        <p className={styles.heroTagline}>{siteConfig.tagline}</p>
+        <div className={styles.heroTagline}>
+          <TypeAnimation
+            sequence={[
+              'The secure runtime for AI agents',
+              2000,
+              'Production-ready AI infrastructure',
+              2000,
+              'Enterprise-grade safety controls',
+              2000,
+              'Built for mission-critical workflows',
+              2000,
+            ]}
+            wrapper="span"
+            speed={50}
+            repeat={Infinity}
+            cursor={true}
+            style={{ display: 'inline-block' }}
+          />
+        </div>
         <p className={styles.heroSubtitle}>
           Production-ready infrastructure for running AI agents safely with sandboxed execution,
           human approval gates, cost governance, and full observability.
@@ -23,9 +42,9 @@ function HomepageHeader() {
             Get Started
           </Link>
           <Link
-            className={clsx('button button--secondary button--lg', styles.button)}
+            className={clsx('button button--lg', styles.buttonGithub)}
             to="https://github.com/wflo-ai/wflo">
-            View on GitHub
+            ⭐ View on GitHub
           </Link>
         </div>
       </div>
