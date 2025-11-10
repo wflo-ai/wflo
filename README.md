@@ -156,7 +156,7 @@ result = await workflow.run(
 ### Prerequisites
 
 - Docker & Docker Compose
-- Python 3.11+
+- **Python 3.11 or 3.12** (Python 3.13 not supported yet - see PYTHON_VERSION_FIX.md)
 - Poetry (for dependency management)
 
 ### 1. Clone and Install
