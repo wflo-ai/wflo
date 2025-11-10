@@ -46,6 +46,19 @@ llm_api_calls_total = Counter(
     ["model", "status"],  # status: success or error
 )
 
+# LLM Cache metrics
+llm_cache_hits_total = Counter(
+    "wflo_llm_cache_hits_total",
+    "Total LLM cache hits",
+    ["model"],
+)
+
+llm_cache_misses_total = Counter(
+    "wflo_llm_cache_misses_total",
+    "Total LLM cache misses",
+    ["model"],
+)
+
 # Sandbox execution metrics
 sandbox_executions_total = Counter(
     "wflo_sandbox_executions_total",

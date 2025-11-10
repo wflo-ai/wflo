@@ -100,8 +100,8 @@ Integration tests are organized by component:
 - `test_temporal.py` - Temporal workflows and activities (10+ tests)
 - `test_sandbox.py` - Sandboxed code execution with Docker (30+ tests)
 - `test_cost_tracking.py` - Cost tracking and budget management (11 tests)
+- `test_redis.py` - Redis caching and distributed locks (20+ tests)
 - `test_kafka.py` - Kafka producers and consumers (TODO)
-- `test_redis.py` - Redis caching and locks (TODO)
 
 ### Test Files
 
@@ -179,6 +179,33 @@ pytest tests/integration/test_cost_tracking.py::TestBudgetCheck -v
 - `TestCostTracker` (6 tests) - Cost calculation and database tracking
 - `TestBudgetCheck` (3 tests) - Budget limit enforcement
 - `TestCostEstimation` (2 tests) - Cost estimation before execution
+
+#### test_redis.py (20+ tests)
+Tests Redis caching and distributed locking:
+- Redis client connection and health checks
+- Basic operations (set, get, delete, expiration)
+- Distributed lock acquisition and release
+- Lock auto-renewal for long operations
+- Concurrent lock prevention
+- LLM response caching (cache hits/misses)
+- Cache expiration and invalidation
+
+```bash
+# Run Redis tests only
+pytest tests/integration/test_redis.py -v
+
+# Run specific test class
+pytest tests/integration/test_redis.py::TestRedisClient -v
+pytest tests/integration/test_redis.py::TestDistributedLock -v
+pytest tests/integration/test_redis.py::TestLLMCache -v
+```
+
+**Test Classes**:
+- `TestRedisClient` (3 tests) - Redis connection and basic operations
+- `TestDistributedLock` (9 tests) - Distributed locking functionality
+- `TestLLMCache` (8 tests) - LLM response caching
+
+**Note:** Redis tests require Redis to be running via docker-compose.
 
 ## Debugging Integration Tests
 

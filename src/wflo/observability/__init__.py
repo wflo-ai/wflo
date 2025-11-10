@@ -9,6 +9,8 @@ This package provides a complete observability stack for Wflo:
 from wflo.observability.logging import configure_logging, get_logger
 from wflo.observability.metrics import (
     init_service_info,
+    llm_cache_hits_total,
+    llm_cache_misses_total,
     llm_cost_total_usd,
     llm_tokens_total,
     sandbox_executions_total,
@@ -32,5 +34,7 @@ __all__ = [
     "workflow_executions_active",
     "llm_cost_total_usd",
     "llm_tokens_total",
+    "llm_cache_hits_total",
+    "llm_cache_misses_total",
     "sandbox_executions_total",
 ]
