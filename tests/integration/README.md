@@ -101,7 +101,7 @@ Integration tests are organized by component:
 - `test_sandbox.py` - Sandboxed code execution with Docker (30+ tests)
 - `test_cost_tracking.py` - Cost tracking and budget management (11 tests)
 - `test_redis.py` - Redis caching and distributed locks (20+ tests)
-- `test_kafka.py` - Kafka producers and consumers (TODO)
+- `test_kafka.py` - Kafka event streaming (20+ tests)
 
 ### Test Files
 
@@ -206,6 +206,34 @@ pytest tests/integration/test_redis.py::TestLLMCache -v
 - `TestLLMCache` (8 tests) - LLM response caching
 
 **Note:** Redis tests require Redis to be running via docker-compose.
+
+#### test_kafka.py (20+ tests)
+Tests Kafka event streaming:
+- Producer connection and message sending
+- Consumer connection and message receiving
+- Event serialization/deserialization
+- Consumer group coordination
+- End-to-end message flow
+- Event schema validation (WorkflowEvent, CostEvent, SandboxEvent, AuditEvent)
+- Topic management
+
+```bash
+# Run Kafka tests only
+pytest tests/integration/test_kafka.py -v
+
+# Run specific test class
+pytest tests/integration/test_kafka.py::TestKafkaProducer -v
+pytest tests/integration/test_kafka.py::TestKafkaConsumer -v
+pytest tests/integration/test_kafka.py::TestEventSchemas -v
+```
+
+**Test Classes**:
+- `TestKafkaProducer` (6 tests) - Producer functionality and event publishing
+- `TestKafkaConsumer` (5 tests) - Consumer functionality and message processing
+- `TestEventSchemas` (4 tests) - Event schema validation
+- `TestTopicManagement` (2 tests) - Topic creation and configuration
+
+**Note:** Kafka tests require Kafka and Zookeeper running via docker-compose. Start with: `docker-compose up -d kafka zookeeper`
 
 ## Debugging Integration Tests
 

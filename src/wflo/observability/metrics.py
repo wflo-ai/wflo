@@ -130,6 +130,32 @@ errors_total = Counter(
     ["error_type", "component"],
 )
 
+# Kafka metrics
+kafka_messages_produced_total = Counter(
+    "wflo_kafka_messages_produced_total",
+    "Total messages produced to Kafka",
+    ["topic", "status"],  # status: success or error
+)
+
+kafka_messages_consumed_total = Counter(
+    "wflo_kafka_messages_consumed_total",
+    "Total messages consumed from Kafka",
+    ["topic", "consumer_group"],
+)
+
+kafka_producer_latency_seconds = Histogram(
+    "wflo_kafka_producer_latency_seconds",
+    "Kafka producer latency in seconds",
+    ["topic"],
+    buckets=(0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, float("inf")),
+)
+
+kafka_consumer_lag = Gauge(
+    "wflo_kafka_consumer_lag",
+    "Kafka consumer lag (messages behind)",
+    ["topic", "consumer_group", "partition"],
+)
+
 
 def init_service_info(version: str, environment: str) -> None:
     """Initialize service information metric.
