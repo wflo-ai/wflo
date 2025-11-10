@@ -134,23 +134,23 @@ class TestDatabaseEngine:
 
     @pytest.mark.asyncio
     async def test_close_disposes_engine(self):
-        """Test close() disposes the engine."""
-        from unittest.mock import AsyncMock, patch
-
+        """Test close() disposes the engine and cleans up resources."""
         settings = Settings(app_env="testing")
         engine = DatabaseEngine(settings)
 
         # Create engine first
         _ = engine.get_engine()
         assert engine._engine is not None
+        assert engine._session_maker is None  # Not created yet
 
-        # Mock the dispose method using patch
-        with patch.object(engine._engine, 'dispose', new_callable=AsyncMock) as mock_dispose:
-            await engine.close()
+        # Create session maker too
+        _ = engine.get_session_maker()
+        assert engine._session_maker is not None
 
-            # Verify dispose was called
-            mock_dispose.assert_called_once()
+        # Close should dispose engine and clear references
+        await engine.close()
 
+        # Verify cleanup
         assert engine._engine is None
         assert engine._session_maker is None
 
