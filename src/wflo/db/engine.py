@@ -51,15 +51,25 @@ class DatabaseEngine:
                 NullPool if self.settings.app_env == "testing" else QueuePool
             )
 
+            # Build engine kwargs
+            engine_kwargs = {
+                "echo": self.settings.database_echo,
+                "poolclass": pool_class,
+            }
+
+            # Only add pool configuration for QueuePool (not NullPool)
+            if pool_class == QueuePool:
+                engine_kwargs.update({
+                    "pool_size": self.settings.database_pool_size,
+                    "max_overflow": self.settings.database_max_overflow,
+                    "pool_timeout": self.settings.database_pool_timeout,
+                    "pool_recycle": self.settings.database_pool_recycle,
+                    "pool_pre_ping": True,  # Enable connection health checks
+                })
+
             self._engine = create_async_engine(
                 str(self.settings.database_url),
-                echo=self.settings.database_echo,
-                pool_size=self.settings.database_pool_size,
-                max_overflow=self.settings.database_max_overflow,
-                pool_timeout=self.settings.database_pool_timeout,
-                pool_recycle=self.settings.database_pool_recycle,
-                pool_pre_ping=True,  # Enable connection health checks
-                poolclass=pool_class,
+                **engine_kwargs,
             )
 
         return self._engine

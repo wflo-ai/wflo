@@ -98,8 +98,10 @@ Integration tests are organized by component:
 
 - `test_database.py` - Database engine, ORM models, CRUD operations (15 tests)
 - `test_temporal.py` - Temporal workflows and activities (10+ tests)
-- `test_kafka.py` - Kafka producers and consumers (TODO)
-- `test_redis.py` - Redis caching and locks (TODO)
+- `test_sandbox.py` - Sandboxed code execution with Docker (30+ tests)
+- `test_cost_tracking.py` - Cost tracking and budget management (11 tests)
+- `test_redis.py` - Redis caching and distributed locks (20+ tests)
+- `test_kafka.py` - Kafka event streaming (20+ tests)
 
 ### Test Files
 
@@ -131,6 +133,107 @@ pytest tests/integration/test_temporal.py -v
 # Skip slow Temporal tests
 pytest tests/integration/ -v -m "not slow"
 ```
+
+#### test_sandbox.py (30+ tests)
+Tests sandboxed code execution with Docker:
+- Basic code execution (Python)
+- Error handling (syntax, runtime, import errors)
+- Timeout enforcement
+- Resource limits (CPU, memory)
+- Network isolation
+- Container cleanup
+- Security features (non-root user, filesystem isolation)
+- Edge cases (empty code, Unicode, large output)
+
+```bash
+# Run sandbox tests only
+pytest tests/integration/test_sandbox.py -v
+
+# Run specific test class
+pytest tests/integration/test_sandbox.py::TestSandboxBasicExecution -v
+
+# Skip slow sandbox tests
+pytest tests/integration/test_sandbox.py -v -m "not slow"
+```
+
+**Note:** Sandbox tests require Docker daemon to be running and accessible.
+
+#### test_cost_tracking.py (11 tests)
+Tests cost tracking and budget management:
+- Cost calculation for different LLM models (GPT-4, GPT-3.5, Claude)
+- Token counting and cost estimation
+- Database cost tracking and aggregation
+- Budget checking and enforcement
+- Multi-call cost accumulation
+
+```bash
+# Run cost tracking tests only
+pytest tests/integration/test_cost_tracking.py -v
+
+# Run specific test class
+pytest tests/integration/test_cost_tracking.py::TestCostTracker -v
+pytest tests/integration/test_cost_tracking.py::TestBudgetCheck -v
+```
+
+**Test Classes**:
+- `TestCostTracker` (6 tests) - Cost calculation and database tracking
+- `TestBudgetCheck` (3 tests) - Budget limit enforcement
+- `TestCostEstimation` (2 tests) - Cost estimation before execution
+
+#### test_redis.py (20+ tests)
+Tests Redis caching and distributed locking:
+- Redis client connection and health checks
+- Basic operations (set, get, delete, expiration)
+- Distributed lock acquisition and release
+- Lock auto-renewal for long operations
+- Concurrent lock prevention
+- LLM response caching (cache hits/misses)
+- Cache expiration and invalidation
+
+```bash
+# Run Redis tests only
+pytest tests/integration/test_redis.py -v
+
+# Run specific test class
+pytest tests/integration/test_redis.py::TestRedisClient -v
+pytest tests/integration/test_redis.py::TestDistributedLock -v
+pytest tests/integration/test_redis.py::TestLLMCache -v
+```
+
+**Test Classes**:
+- `TestRedisClient` (3 tests) - Redis connection and basic operations
+- `TestDistributedLock` (9 tests) - Distributed locking functionality
+- `TestLLMCache` (8 tests) - LLM response caching
+
+**Note:** Redis tests require Redis to be running via docker-compose.
+
+#### test_kafka.py (20+ tests)
+Tests Kafka event streaming:
+- Producer connection and message sending
+- Consumer connection and message receiving
+- Event serialization/deserialization
+- Consumer group coordination
+- End-to-end message flow
+- Event schema validation (WorkflowEvent, CostEvent, SandboxEvent, AuditEvent)
+- Topic management
+
+```bash
+# Run Kafka tests only
+pytest tests/integration/test_kafka.py -v
+
+# Run specific test class
+pytest tests/integration/test_kafka.py::TestKafkaProducer -v
+pytest tests/integration/test_kafka.py::TestKafkaConsumer -v
+pytest tests/integration/test_kafka.py::TestEventSchemas -v
+```
+
+**Test Classes**:
+- `TestKafkaProducer` (6 tests) - Producer functionality and event publishing
+- `TestKafkaConsumer` (5 tests) - Consumer functionality and message processing
+- `TestEventSchemas` (4 tests) - Event schema validation
+- `TestTopicManagement` (2 tests) - Topic creation and configuration
+
+**Note:** Kafka tests require Kafka and Zookeeper running via docker-compose. Start with: `docker-compose up -d kafka zookeeper`
 
 ## Debugging Integration Tests
 

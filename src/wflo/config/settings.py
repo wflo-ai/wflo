@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_env: Literal["development", "staging", "production"] = Field(
+    app_env: Literal["development", "staging", "production", "testing"] = Field(
         default="development",
         description="Application environment",
     )
@@ -35,6 +35,30 @@ class Settings(BaseSettings):
     debug: bool = Field(
         default=False,
         description="Enable debug mode",
+    )
+    log_json_output: bool = Field(
+        default=False,
+        description="Use JSON logging format (for production)",
+    )
+
+    # Observability
+    opentelemetry_enabled: bool = Field(
+        default=False,
+        description="Enable OpenTelemetry tracing",
+    )
+    opentelemetry_otlp_endpoint: str | None = Field(
+        default=None,
+        description="OTLP gRPC endpoint (e.g., localhost:4317)",
+    )
+    metrics_enabled: bool = Field(
+        default=True,
+        description="Enable Prometheus metrics",
+    )
+    metrics_port: int = Field(
+        default=8000,
+        ge=1024,
+        le=65535,
+        description="Port for metrics HTTP server",
     )
 
     # Database (PostgreSQL)
@@ -53,6 +77,22 @@ class Settings(BaseSettings):
         ge=0,
         le=50,
         description="Maximum overflow connections",
+    )
+    database_echo: bool = Field(
+        default=False,
+        description="Enable SQL query logging for debugging",
+    )
+    database_pool_timeout: int = Field(
+        default=30,
+        ge=1,
+        le=300,
+        description="Pool timeout in seconds",
+    )
+    database_pool_recycle: int = Field(
+        default=3600,
+        ge=300,
+        le=7200,
+        description="Pool recycle time in seconds",
     )
 
     # Redis
