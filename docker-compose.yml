@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL - Workflow metadata and state persistence
   postgres:
@@ -98,7 +96,7 @@ services:
       - POSTGRES_USER=wflo_user
       - POSTGRES_PWD=wflo_password
       - POSTGRES_SEEDS=postgres
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      # DYNAMIC_CONFIG_FILE_PATH removed - use defaults
     ports:
       - "7233:7233"  # gRPC
     volumes:
