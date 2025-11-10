@@ -188,6 +188,7 @@ filterwarnings = [
     "error",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
+    "ignore:pkg_resources is deprecated:UserWarning",
 ]
 
 # Coverage configuration
