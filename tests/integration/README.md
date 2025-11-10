@@ -25,7 +25,18 @@ The tests use a separate test database to avoid interfering with development dat
 docker compose exec postgres psql -U wflo_user -d wflo -c "CREATE DATABASE wflo_test;"
 
 # Or use the provided script
-./scripts/create_test_db.sh
+./scripts/setup_test_db.sh
+```
+
+### 3. Verify Temporal is Running
+
+```bash
+# Check Temporal server status
+docker compose ps temporal
+
+# Access Temporal Web UI
+open http://localhost:8233  # macOS
+xdg-open http://localhost:8233  # Linux
 ```
 
 ## Running Integration Tests
@@ -85,10 +96,41 @@ postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test
 
 Integration tests are organized by component:
 
-- `test_database.py` - Database engine, ORM models, CRUD operations
-- `test_temporal.py` - Temporal workflows and activities (TODO)
+- `test_database.py` - Database engine, ORM models, CRUD operations (15 tests)
+- `test_temporal.py` - Temporal workflows and activities (10+ tests)
 - `test_kafka.py` - Kafka producers and consumers (TODO)
 - `test_redis.py` - Redis caching and locks (TODO)
+
+### Test Files
+
+#### test_database.py (15 tests)
+Tests database operations without requiring Temporal:
+- Database connectivity
+- Workflow definition CRUD
+- Execution tracking
+- State snapshots
+- Approval requests
+
+```bash
+# Run database tests only
+pytest tests/integration/test_database.py -v
+```
+
+#### test_temporal.py (10+ tests)
+Tests Temporal workflows and activities:
+- SimpleWorkflow execution
+- CodeExecutionWorkflow with sandboxing
+- WfloWorkflow with database integration
+- Activity execution
+- Workflow retries and cancellation
+
+```bash
+# Run Temporal tests only
+pytest tests/integration/test_temporal.py -v
+
+# Skip slow Temporal tests
+pytest tests/integration/ -v -m "not slow"
+```
 
 ## Debugging Integration Tests
 
