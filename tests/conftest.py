@@ -4,8 +4,10 @@ import os
 from collections.abc import AsyncGenerator
 
 import pytest
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from wflo.cache.redis import get_redis_client
 from wflo.config.settings import Settings
 from wflo.db.engine import DatabaseEngine
 from wflo.db.models import Base
@@ -100,3 +102,17 @@ async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
             raise
         finally:
             await session.close()
+
+
+# Redis fixtures
+
+
+@pytest.fixture
+async def redis_client() -> AsyncGenerator[Redis, None]:
+    """Create a Redis client for testing.
+
+    This creates a new Redis connection for each test in the correct event loop,
+    preventing "Event loop is closed" errors.
+    """
+    async with get_redis_client() as client:
+        yield client

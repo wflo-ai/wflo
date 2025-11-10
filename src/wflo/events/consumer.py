@@ -111,7 +111,7 @@ class KafkaConsumer:
             "max.poll.interval.ms": 300000,
             # Fetch config
             "fetch.min.bytes": 1024,
-            "fetch.max.wait.ms": 500,
+            "fetch.wait.max.ms": 500,
         }
 
         self.consumer: Consumer | None = None

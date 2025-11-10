@@ -6,6 +6,8 @@ and accurately tracks LLM API usage costs.
 Run with: pytest tests/integration/test_cost_tracking.py -v
 """
 
+from decimal import Decimal
+
 import pytest
 from sqlalchemy import select
 
@@ -36,8 +38,8 @@ class TestCostTracker:
         cost = tracker.calculate_cost(usage)
 
         # GPT-4 pricing (as of 2024): $0.03/1K prompt, $0.06/1K completion
-        expected_cost = (100 * 0.03 / 1000) + (50 * 0.06 / 1000)
-        assert abs(cost - expected_cost) < 0.0001  # Allow small floating point error
+        expected_cost = Decimal((100 * 0.03 / 1000) + (50 * 0.06 / 1000))
+        assert abs(cost - expected_cost) < Decimal("0.0001")  # Allow small floating point error
 
     async def test_calculate_cost_gpt35_turbo(self, db_session):
         """Test calculating cost for GPT-3.5-turbo API call."""
@@ -52,8 +54,8 @@ class TestCostTracker:
         cost = tracker.calculate_cost(usage)
 
         # GPT-3.5-turbo pricing: $0.0015/1K prompt, $0.002/1K completion
-        expected_cost = (1000 * 0.0015 / 1000) + (500 * 0.002 / 1000)
-        assert abs(cost - expected_cost) < 0.0001
+        expected_cost = Decimal((1000 * 0.0015 / 1000) + (500 * 0.002 / 1000))
+        assert abs(cost - expected_cost) < Decimal("0.0001")
 
     async def test_calculate_cost_claude_sonnet(self, db_session):
         """Test calculating cost for Claude Sonnet API call."""
@@ -68,8 +70,8 @@ class TestCostTracker:
         cost = tracker.calculate_cost(usage)
 
         # Claude Sonnet pricing: $0.003/1K prompt, $0.015/1K completion
-        expected_cost = (1000 * 0.003 / 1000) + (500 * 0.015 / 1000)
-        assert abs(cost - expected_cost) < 0.0001
+        expected_cost = Decimal((1000 * 0.003 / 1000) + (500 * 0.015 / 1000))
+        assert abs(cost - expected_cost) < Decimal("0.0001")
 
     async def test_track_cost_in_database(self, db_session):
         """Test tracking cost in database."""
@@ -83,7 +85,8 @@ class TestCostTracker:
             name="Test Workflow",
             description="Test",
             version=1,
-            definition={},
+            steps={},
+            policies={},
         )
         db_session.add(workflow_def)
         await db_session.commit()
@@ -139,7 +142,8 @@ class TestCostTracker:
             name="Test Workflow 2",
             description="Test",
             version=1,
-            definition={},
+            steps={},
+            policies={},
         )
         db_session.add(workflow_def)
         await db_session.commit()
@@ -221,7 +225,8 @@ class TestBudgetCheck:
             name="Test Workflow",
             description="Test",
             version=1,
-            definition={},
+            steps={},
+            policies={},
         )
         db_session.add(workflow_def)
         await db_session.commit()
@@ -262,7 +267,8 @@ class TestBudgetCheck:
             name="Test Workflow",
             description="Test",
             version=1,
-            definition={},
+            steps={},
+            policies={},
         )
         db_session.add(workflow_def)
         await db_session.commit()
@@ -303,7 +309,8 @@ class TestBudgetCheck:
             name="Test Workflow",
             description="Test",
             version=1,
-            definition={},
+            steps={},
+            policies={},
         )
         db_session.add(workflow_def)
         await db_session.commit()
