@@ -223,6 +223,11 @@ class Settings(BaseSettings):
         """Check if running in production mode."""
         return self.app_env == "production"
 
+    @property
+    def temporal_address(self) -> str:
+        """Get Temporal server address (alias for temporal_host)."""
+        return self.temporal_host
+
 
 @lru_cache()
 def get_settings() -> Settings:
