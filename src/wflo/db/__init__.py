@@ -1,3 +1,8 @@
-"""Database layer with SQLAlchemy and async PostgreSQL."""
+"""Database layer for Wflo.
 
-__all__ = []
+This module provides database connectivity, ORM models, and migrations.
+"""
+
+from wflo.db.engine import get_engine, get_session, init_db
+
+__all__ = ["get_engine", "get_session", "init_db"]
