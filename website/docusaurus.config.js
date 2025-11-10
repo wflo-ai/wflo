@@ -126,9 +126,9 @@ const config = {
         additionalLanguages: ['python', 'bash'],
       },
       colorMode: {
-        defaultMode: 'light',
+        defaultMode: 'dark',
         disableSwitch: false,
-        respectPrefersColorScheme: true,
+        respectPrefersColorScheme: false,
       },
     }),
 };

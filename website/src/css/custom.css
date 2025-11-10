@@ -4,108 +4,164 @@
  * Color palette: Primary purple with light purple backgrounds
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Primary brand colors - Purple inspired by LangChain */
-  --ifm-color-primary: #4d65ff;
-  --ifm-color-primary-dark: #3d55ef;
-  --ifm-color-primary-darker: #3550e5;
-  --ifm-color-primary-darkest: #2a42c7;
-  --ifm-color-primary-light: #677aff;
-  --ifm-color-primary-lighter: #7d8dff;
-  --ifm-color-primary-lightest: #a3b0ff;
+  /* Vibrant accent colors - Modern 2025 palette */
+  --accent-electric-blue: #06b6d4;
+  --accent-cyan: #22d3ee;
+  --accent-neon-green: #10b981;
+  --accent-emerald: #34d399;
+  --accent-teal: #14b8a6;
+  --accent-purple: #8b5cf6;
+  --accent-violet: #a78bfa;
+  --accent-pink: #ec4899;
 
-  /* Secondary accent - Light purple and green */
-  --accent-light-purple: #F8F7FF;
-  --accent-purple-light: #ebb8fe;
-  --accent-green: #10b981;
+  /* Primary brand colors - Electric blue as primary */
+  --ifm-color-primary: #06b6d4;
+  --ifm-color-primary-dark: #0891b2;
+  --ifm-color-primary-darker: #0e7490;
+  --ifm-color-primary-darkest: #155e75;
+  --ifm-color-primary-light: #22d3ee;
+  --ifm-color-primary-lighter: #67e8f9;
+  --ifm-color-primary-lightest: #a5f3fc;
 
-  /* Background colors - Clean, light, minimal */
+  /* Light mode colors (less important since dark is default) */
   --ifm-background-color: #ffffff;
-  --ifm-background-surface-color: #fafbfc;
+  --ifm-background-surface-color: #f8fafc;
   --ifm-card-background-color: #ffffff;
-  --ifm-hero-background: linear-gradient(180deg, #F8F7FF 0%, #ffffff 100%);
+  --ifm-hero-background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
 
-  /* Text colors - High contrast for readability */
-  --ifm-font-color-base: #1a1a1a;
-  --ifm-font-color-secondary: #6b7280;
-  --ifm-heading-color: #0a0a0a;
-  --ifm-font-color-muted: #9ca3af;
+  --ifm-font-color-base: #1e293b;
+  --ifm-font-color-secondary: #64748b;
+  --ifm-heading-color: #0f172a;
+  --ifm-font-color-muted: #94a3b8;
 
-  /* Typography - Inter font (clean, professional) */
-  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-  --ifm-font-family-monospace: 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  /* Typography - Space Grotesk for headings, Inter for body */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifm-font-family-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
   --ifm-font-size-base: 16px;
   --ifm-line-height-base: 1.7;
   --ifm-heading-font-weight: 700;
   --ifm-font-weight-semibold: 600;
   --ifm-font-weight-bold: 700;
 
-  /* Spacing - Generous, clean whitespace */
+  /* Spacing - Generous whitespace */
   --ifm-spacing-horizontal: 2rem;
   --ifm-spacing-vertical: 2rem;
   --ifm-global-spacing: 2rem;
 
-  /* Border radius - Modern, smooth curves */
-  --ifm-global-radius: 12px;
-  --ifm-code-border-radius: 10px;
-  --ifm-button-border-radius: 8px;
+  /* Border radius - Modern, rounded */
+  --ifm-global-radius: 16px;
+  --ifm-code-border-radius: 12px;
+  --ifm-button-border-radius: 12px;
 
   /* Code blocks */
   --ifm-code-font-size: 0.875rem;
-  --ifm-code-background: #f5f5f7;
+  --ifm-code-background: #f1f5f9;
   --ifm-code-padding-horizontal: 0.5rem;
   --ifm-code-padding-vertical: 0.25rem;
 
-  /* Borders - Subtle separators */
+  /* Borders */
   --ifm-global-border-width: 1px;
-  --ifm-hr-border-color: #e5e7eb;
-  --ifm-table-border-color: #e5e7eb;
-  --ifm-toc-border-color: #e5e7eb;
+  --ifm-hr-border-color: #e2e8f0;
+  --ifm-table-border-color: #e2e8f0;
+  --ifm-toc-border-color: #e2e8f0;
 
-  /* Navbar - Clean and elevated */
-  --ifm-navbar-background-color: rgba(255, 255, 255, 0.95);
+  /* Navbar */
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.8);
   --ifm-navbar-height: 70px;
   --ifm-navbar-padding-horizontal: 2rem;
-  --ifm-navbar-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --ifm-navbar-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
 
-  /* Footer - Subtle background */
-  --ifm-footer-background-color: #fafbfc;
+  /* Footer */
+  --ifm-footer-background-color: #f8fafc;
   --ifm-footer-padding-vertical: 4rem;
 
-  /* Sidebar - Clean navigation */
+  /* Sidebar */
   --doc-sidebar-width: 280px;
-  --ifm-menu-color: #6b7280;
-  --ifm-menu-color-active: #4d65ff;
-  --ifm-menu-color-background-active: rgba(77, 101, 255, 0.08);
+  --ifm-menu-color: #64748b;
+  --ifm-menu-color-active: #06b6d4;
+  --ifm-menu-color-background-active: rgba(6, 182, 212, 0.1);
 
-  /* Shadows - Subtle elevation system */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  /* Shadows - Enhanced elevation */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* Glassmorphism */
+  --glass-background: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: 12px;
 }
 
-/* Dark mode colors */
+/* Dark mode colors - Vibrant modern dark theme */
 [data-theme='dark'] {
-  --ifm-background-color: #0f1117;
-  --ifm-background-surface-color: #1a1d26;
-  --ifm-card-background-color: #1a1d26;
-  --ifm-font-color-base: #e5e7eb;
-  --ifm-font-color-secondary: #9ca3af;
-  --ifm-heading-color: #f9fafb;
-  --ifm-code-background: #1a1d26;
-  --ifm-navbar-background-color: rgba(26, 29, 38, 0.95);
-  --ifm-navbar-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --ifm-footer-background-color: #0f1117;
-  --ifm-hr-border-color: #2d3139;
-  --ifm-table-border-color: #2d3139;
-  --ifm-toc-border-color: #2d3139;
-  --ifm-menu-color: #9ca3af;
-  --ifm-menu-color-active: #677aff;
-  --ifm-menu-color-background-active: rgba(103, 122, 255, 0.1);
-  --ifm-hero-background: linear-gradient(180deg, #0f1117 0%, #1a1d26 100%);
+  /* Rich dark backgrounds with depth */
+  --ifm-background-color: #0a0e17;
+  --ifm-background-surface-color: #12161f;
+  --ifm-card-background-color: #161b26;
+
+  /* Gradient backgrounds for hero sections */
+  --ifm-hero-background: radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%);
+  --gradient-mesh:
+    radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+
+  /* High contrast text for dark mode */
+  --ifm-font-color-base: #e2e8f0;
+  --ifm-font-color-secondary: #94a3b8;
+  --ifm-heading-color: #f8fafc;
+  --ifm-font-color-muted: #64748b;
+
+  /* Vibrant accents pop against dark */
+  --ifm-color-primary: #22d3ee;
+  --ifm-color-primary-dark: #06b6d4;
+  --ifm-color-primary-darker: #0891b2;
+  --ifm-color-primary-light: #67e8f9;
+
+  /* Code blocks - Dark with subtle border */
+  --ifm-code-background: #0f1419;
+  --ifm-code-color: #e2e8f0;
+
+  /* Navbar - Glassmorphic with blur */
+  --ifm-navbar-background-color: rgba(10, 14, 23, 0.8);
+  --ifm-navbar-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+  /* Footer - Seamless dark */
+  --ifm-footer-background-color: #0a0e17;
+
+  /* Borders - Subtle with glow */
+  --ifm-hr-border-color: rgba(148, 163, 184, 0.1);
+  --ifm-table-border-color: rgba(148, 163, 184, 0.1);
+  --ifm-toc-border-color: rgba(148, 163, 184, 0.1);
+
+  /* Menu - Cyan accents */
+  --ifm-menu-color: #94a3b8;
+  --ifm-menu-color-active: #22d3ee;
+  --ifm-menu-color-background-active: rgba(34, 211, 238, 0.1);
+
+  /* Glassmorphism for dark mode */
+  --glass-background: rgba(22, 27, 38, 0.6);
+  --glass-border: rgba(148, 163, 184, 0.1);
+  --glass-blur: 16px;
+
+  /* Enhanced shadows for depth in dark mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.7);
+
+  /* Glow effects for accents */
+  --glow-cyan: 0 0 20px rgba(34, 211, 238, 0.3);
+  --glow-green: 0 0 20px rgba(16, 185, 129, 0.3);
+  --glow-purple: 0 0 20px rgba(139, 92, 246, 0.3);
 }
 
 /* Global styles - Clean, minimalist polish */
@@ -118,12 +174,12 @@ body {
   font-feature-settings: 'liga', 'kern';
 }
 
-/* Typography - Clean hierarchy */
+/* Typography - Space Grotesk headings, Inter body */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--ifm-heading-color);
-  font-family: var(--ifm-font-family-base);
+  font-family: var(--ifm-font-family-heading);
   word-wrap: break-word;
   hyphens: auto;
 }
@@ -179,23 +235,45 @@ a:hover {
   text-underline-offset: 2px;
 }
 
-/* Navbar - Modern, clean feel */
+/* Navbar - Modern glassmorphic sticky navbar */
 .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   border-bottom: 1px solid var(--ifm-hr-border-color);
   box-shadow: var(--ifm-navbar-shadow);
   backdrop-filter: saturate(180%) blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='dark'] .navbar {
+  background-color: rgba(10, 14, 23, 0.85);
+  border-bottom-color: rgba(148, 163, 184, 0.1);
+  backdrop-filter: saturate(180%) blur(24px);
 }
 
 .navbar__brand {
   font-weight: 700;
-  font-size: 1.375rem;
-  letter-spacing: -0.02em;
-  color: var(--ifm-color-primary);
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--accent-electric-blue), var(--accent-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] .navbar__brand {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .navbar__brand:hover {
-  color: var(--ifm-color-primary-dark);
+  opacity: 0.8;
   text-decoration: none;
+  transform: scale(1.02);
 }
 
 .navbar__logo {
@@ -205,34 +283,52 @@ a:hover {
 
 .navbar__item {
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .navbar__link {
   color: var(--ifm-font-color-secondary);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
 }
 
 .navbar__link:hover {
-  color: var(--ifm-color-primary);
+  color: var(--accent-electric-blue);
+  background: rgba(6, 182, 212, 0.1);
   text-decoration: none;
 }
 
+[data-theme='dark'] .navbar__link:hover {
+  color: var(--accent-cyan);
+  background: rgba(34, 211, 238, 0.1);
+}
+
 .navbar__link--active {
-  color: var(--ifm-color-primary);
+  color: var(--accent-electric-blue);
   font-weight: 600;
   position: relative;
+  background: rgba(6, 182, 212, 0.08);
+}
+
+[data-theme='dark'] .navbar__link--active {
+  color: var(--accent-cyan);
+  background: rgba(34, 211, 238, 0.08);
 }
 
 .navbar__link--active:after {
   content: '';
   position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
+  bottom: 0;
+  left: 1rem;
+  right: 1rem;
   height: 2px;
-  background: var(--ifm-color-primary);
+  background: linear-gradient(90deg, var(--accent-electric-blue), var(--accent-teal));
   border-radius: 2px;
+}
+
+[data-theme='dark'] .navbar__link--active:after {
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));
 }
 
 /* Sidebar - Clean navigation */
@@ -356,52 +452,75 @@ tr:hover {
   background: var(--ifm-background-surface-color);
 }
 
-/* Buttons - Modern and clean */
+/* Buttons - Modern with gradients and glow */
 .button {
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 0.9375rem;
-  padding: 0.625rem 1.5rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
   font-family: var(--ifm-font-family-base);
 }
 
 .button--primary {
-  background: var(--ifm-color-primary);
+  background: linear-gradient(135deg, var(--accent-electric-blue) 0%, var(--accent-teal) 100%);
   color: #ffffff;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+[data-theme='dark'] .button--primary {
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-teal) 100%);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
 }
 
 .button--primary:hover {
-  background: var(--ifm-color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4), 0 0 30px rgba(6, 182, 212, 0.2);
   color: #ffffff;
   text-decoration: none;
 }
 
+[data-theme='dark'] .button--primary:hover {
+  box-shadow: 0 8px 20px rgba(34, 211, 238, 0.4), 0 0 30px rgba(34, 211, 238, 0.3);
+}
+
 .button--primary:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 6px rgba(6, 182, 212, 0.3);
 }
 
 .button--secondary {
-  background: transparent;
+  background: var(--glass-background);
+  backdrop-filter: blur(12px);
   color: var(--ifm-font-color-base);
-  border: 2px solid var(--ifm-hr-border-color);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .button--secondary:hover {
-  background: var(--ifm-background-surface-color);
-  border-color: var(--ifm-color-primary);
-  color: var(--ifm-color-primary);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent-electric-blue);
+  color: var(--accent-electric-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
   text-decoration: none;
 }
 
+[data-theme='dark'] .button--secondary {
+  background: rgba(22, 27, 38, 0.8);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+[data-theme='dark'] .button--secondary:hover {
+  background: rgba(22, 27, 38, 0.95);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
 .button--lg {
-  padding: 0.875rem 2rem;
-  font-size: 1rem;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
 }
 
 /* Cards - Clean elevation */
