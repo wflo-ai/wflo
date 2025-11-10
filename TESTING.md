@@ -1,429 +1,434 @@
 # Testing Guide
 
-This document describes the testing strategy and how to run tests for Wflo.
+Quick reference for running tests in Wflo.
 
-## Test Structure
+## Quick Start
 
-```
-tests/
-├── unit/                  # Unit tests (no external dependencies)
-│   ├── test_settings.py
-│   ├── test_workflow_models.py
-│   ├── test_execution_models.py
-│   └── test_database_engine.py
-├── integration/           # Integration tests (requires Docker services)
-│   ├── README.md
-│   └── test_database.py
-├── e2e/                   # End-to-end tests (full workflow execution)
-└── conftest.py           # Shared fixtures
+```bash
+# 1. Verify setup
+./scripts/verify_setup.sh
+
+# 2. Run integration tests
+./scripts/run_tests.sh integration
+
+# 3. View results
 ```
 
-## Test Categories
+## Test Organization
+
+### Integration Tests (100+ tests)
+
+| Test File | Tests | Requirements | Description |
+|-----------|-------|--------------|-------------|
+| **test_database.py** | 15 | PostgreSQL | Database engine, ORM models, CRUD operations |
+| **test_redis.py** | 20+ | Redis | Distributed locks, LLM caching, connection pooling |
+| **test_kafka.py** | 20+ | Kafka + Zookeeper | Event streaming, producer/consumer, topics |
+| **test_temporal.py** | 10+ | Temporal + PostgreSQL | Workflows, activities, execution |
+| **test_sandbox.py** | 30+ | Docker | Code execution, resource limits, security |
+| **test_cost_tracking.py** | 11 | PostgreSQL | Cost calculation, budget enforcement |
 
 ### Unit Tests
-- **No external dependencies** - all I/O is mocked
-- **Fast execution** - typically < 1 second
-- **Test individual functions and classes**
-- **Run frequently during development**
 
-Coverage targets:
-- Models: 100%
-- Utilities: 90%
-- Managers: 90%
+Located in `tests/unit/` - Run without Docker dependencies.
 
-### Integration Tests
-- **Require Docker services** (PostgreSQL, Redis, Kafka, Temporal)
-- **Test component interactions**
-- **Slower execution** - typically 5-30 seconds
-- **Run before commits and in CI/CD**
-
-Coverage targets:
-- Database layer: 90%
-- Temporal integration: 80%
-- Kafka integration: 80%
-
-### End-to-End Tests
-- **Full workflow execution**
-- **Test user-facing functionality**
-- **Slowest execution** - typically 1-5 minutes
-- **Run before releases**
-
-Coverage targets:
-- SDK: 85%
-- Example workflows: 100%
-
-## Running Tests
+## Running Tests Locally
 
 ### Prerequisites
 
-1. Install dependencies:
-```bash
-poetry install
-```
-
-2. For integration/e2e tests, start services:
-```bash
-make dev-up
-```
-
-### Quick Commands
+Ensure Docker services are running:
 
 ```bash
-# Run all tests
-make test
+# Start all services
+docker-compose up -d
 
-# Run unit tests only (fast)
-make test-unit
+# Verify services are healthy (wait 30-60 seconds)
+docker-compose ps
 
-# Run integration tests
-make test-integration
-
-# Run with coverage
-make test
-
-# Run in watch mode (during development)
-make test-watch
+# Expected output: All services show "Up (healthy)"
 ```
 
-### Detailed Commands
-
-#### Unit Tests
+### Run All Integration Tests
 
 ```bash
-# All unit tests
-pytest tests/unit/ -v
+# Using test runner script (recommended)
+./scripts/run_tests.sh integration
 
-# Specific test file
-pytest tests/unit/test_workflow_models.py -v
+# Or directly with pytest
+poetry run pytest tests/integration/ -v
 
-# Specific test class
-pytest tests/unit/test_workflow_models.py::TestWorkflowDefinition -v
-
-# Specific test
-pytest tests/unit/test_workflow_models.py::TestWorkflowDefinition::test_validate_dag -v
-
-# With coverage
-pytest tests/unit/ -v --cov=wflo --cov-report=html
+# Expected: 100+ tests pass in 45-60 seconds
 ```
 
-#### Integration Tests
+### Run Specific Test Files
 
-Integration tests require a test database. Use the helper scripts:
+#### Database Tests
+```bash
+poetry run pytest tests/integration/test_database.py -v
+
+# Expected: 15 passed
+# Tests: workflow CRUD, executions, state snapshots, approvals
+```
+
+#### Redis Tests
+```bash
+poetry run pytest tests/integration/test_redis.py -v
+
+# Expected: 20+ passed
+# Tests: client connection, distributed locks, LLM cache, auto-renewal
+```
+
+#### Kafka Tests
+```bash
+poetry run pytest tests/integration/test_kafka.py -v
+
+# Expected: 17+ passed
+# Tests: producer, consumer, event schemas, topics, serialization
+```
+
+#### Temporal Tests
+```bash
+poetry run pytest tests/integration/test_temporal.py -v
+
+# Expected: 10+ passed
+# Tests: workflow execution, activities, retries, cancellation
+```
+
+#### Sandbox Tests
+```bash
+poetry run pytest tests/integration/test_sandbox.py -v
+
+# Expected: 30+ passed
+# Tests: code execution, timeouts, resource limits, security
+```
+
+#### Cost Tracking Tests
+```bash
+poetry run pytest tests/integration/test_cost_tracking.py -v
+
+# Expected: 11 passed
+# Tests: cost calculation, budget checks, multi-model support
+```
+
+### Run Specific Test Classes
 
 ```bash
-# Setup test database
-make test-integration-setup
-# or
-./scripts/setup_test_db.sh
+# Redis: Test only distributed locks
+poetry run pytest tests/integration/test_redis.py::TestDistributedLock -v
 
-# Run integration tests
-make test-integration
+# Kafka: Test only producer functionality
+poetry run pytest tests/integration/test_kafka.py::TestKafkaProducer -v
 
-# Run with setup (one command)
-make test-integration-full
-
-# Cleanup test database
-make test-integration-clean
+# Cost: Test only budget enforcement
+poetry run pytest tests/integration/test_cost_tracking.py::TestBudgetCheck -v
 ```
 
-Manual setup:
-```bash
-# Start PostgreSQL
-docker compose up -d postgres
-
-# Create test database
-docker compose exec postgres createdb -U wflo_user wflo_test
-
-# Run migrations
-DATABASE_URL="postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test" \
-  poetry run alembic upgrade head
-
-# Run tests
-TEST_DATABASE_URL="postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test" \
-  pytest tests/integration/ -v
-```
-
-#### End-to-End Tests
+### Run Specific Test Methods
 
 ```bash
-# Run all e2e tests
-make test-e2e
+# Single test
+poetry run pytest tests/integration/test_redis.py::TestDistributedLock::test_lock_auto_renewal -v
 
-# Run specific e2e test
-pytest tests/e2e/test_simple_workflow.py -v
+# Multiple tests with pattern
+poetry run pytest tests/integration/ -k "cache" -v
 ```
 
-### Test Markers
-
-Tests are marked with pytest markers:
-
-```bash
-# Run only unit tests
-pytest -m unit -v
-
-# Run only integration tests
-pytest -m integration -v
-
-# Run only e2e tests
-pytest -m e2e -v
-
-# Run only slow tests
-pytest -m slow -v
-
-# Skip slow tests
-pytest -m "not slow" -v
-
-# Skip integration and e2e tests
-pytest -m "not integration and not e2e" -v
-```
-
-## Writing Tests
-
-### Unit Test Example
-
-```python
-import pytest
-from wflo.models.workflow import WorkflowDefinition, WorkflowStep
-
-class TestWorkflowDefinition:
-    """Unit tests for WorkflowDefinition."""
-
-    def test_create_workflow(self):
-        """Test creating a basic workflow."""
-        workflow = WorkflowDefinition(
-            name="test-workflow",
-            steps=[
-                WorkflowStep(id="step1", type="AGENT"),
-            ],
-            policies={"max_cost_usd": 10.0},
-        )
-
-        assert workflow.name == "test-workflow"
-        assert len(workflow.steps) == 1
-```
-
-### Integration Test Example
-
-```python
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-from wflo.db.models import WorkflowDefinitionModel
-
-@pytest.mark.asyncio
-@pytest.mark.integration
-class TestWorkflowDatabase:
-    """Integration tests for workflow database operations."""
-
-    async def test_create_workflow(self, db_session: AsyncSession):
-        """Test creating a workflow in the database."""
-        workflow = WorkflowDefinitionModel(
-            id="test-123",
-            name="test-workflow",
-            steps=[],
-            policies={},
-        )
-
-        db_session.add(workflow)
-        await db_session.commit()
-
-        assert workflow.id == "test-123"
-```
-
-### Using Fixtures
-
-```python
-# Use db_session fixture for database tests
-async def test_with_database(db_session: AsyncSession):
-    # db_session automatically creates and drops tables
-    result = await db_session.execute(select(WorkflowDefinition))
-    workflows = result.scalars().all()
-    assert len(workflows) == 0
-
-# Use sample fixtures
-def test_with_sample_data(sample_workflow_id: str):
-    assert sample_workflow_id == "test-workflow-123"
-```
-
-## Coverage
-
-### View Coverage Report
+### Run with Coverage
 
 ```bash
 # Generate HTML coverage report
-pytest --cov=wflo --cov-report=html
+poetry run pytest tests/integration/ --cov=wflo --cov-report=html -v
 
-# Open report
+# View report
 open htmlcov/index.html  # macOS
 xdg-open htmlcov/index.html  # Linux
+start htmlcov/index.html  # Windows
+
+# Expected: 80%+ coverage
 ```
 
-### Coverage Requirements
+### Run with Different Verbosity
 
-- **Minimum**: 80% (enforced by pytest-cov)
-- **Target**: 90%
-- **Critical paths**: 100%
+```bash
+# Minimal output
+poetry run pytest tests/integration/ -q
 
-Coverage configuration is in `pyproject.toml`:
+# Standard output
+poetry run pytest tests/integration/ -v
 
-```toml
-[tool.pytest.ini_options]
-addopts = [
-    "--cov=wflo",
-    "--cov-report=html",
-    "--cov-fail-under=80",
-]
+# Detailed output with print statements
+poetry run pytest tests/integration/ -vv -s
 
-[tool.coverage.run]
-omit = [
-    "*/tests/*",
-    "*/migrations/*",
-]
+# Show only test names
+poetry run pytest tests/integration/ --collect-only
 ```
 
-## CI/CD Integration
+## Test Results Reference
 
-Tests run automatically in GitHub Actions:
+### Expected Success Output
+
+```
+tests/integration/test_database.py::TestWorkflowDefinitionModel::test_create_workflow_definition PASSED
+tests/integration/test_database.py::TestWorkflowDefinitionModel::test_read_workflow_definition PASSED
+tests/integration/test_database.py::TestWorkflowDefinitionModel::test_update_workflow_definition PASSED
+...
+tests/integration/test_redis.py::TestRedisClient::test_redis_health_check PASSED
+tests/integration/test_redis.py::TestDistributedLock::test_lock_acquisition_and_release PASSED
+tests/integration/test_redis.py::TestLLMCache::test_cache_get_or_compute PASSED
+...
+tests/integration/test_kafka.py::TestKafkaProducer::test_send_workflow_event PASSED
+tests/integration/test_kafka.py::TestKafkaConsumer::test_produce_and_consume PASSED
+...
+
+======================== 100+ passed in 45.23s =========================
+```
+
+### Key Metrics Being Tested
+
+**Redis Tests:**
+- ✅ Connection pooling and health checks
+- ✅ Distributed lock acquisition/release
+- ✅ Lock auto-renewal for long operations
+- ✅ Concurrent lock prevention
+- ✅ LLM cache hit/miss rates
+- ✅ Cache expiration and invalidation
+
+**Kafka Tests:**
+- ✅ Producer idempotent delivery
+- ✅ Consumer group coordination
+- ✅ Event serialization/deserialization
+- ✅ Topic creation and management
+- ✅ End-to-end message flow
+- ✅ Schema validation (WorkflowEvent, CostEvent, etc.)
+
+**Cost Tracking Tests:**
+- ✅ Cost calculation for GPT-4, Claude, Gemini
+- ✅ Token counting accuracy
+- ✅ Budget enforcement (50%, 75%, 90%, 100%)
+- ✅ Multi-model support (400+ models)
+- ✅ Database persistence
+
+## Troubleshooting Tests
+
+### Tests Fail with Connection Error
+
+**Problem**: `ConnectionRefusedError` or `asyncpg.exceptions.CannotConnectNowError`
+
+**Solution**:
+```bash
+# Check if services are running
+docker-compose ps
+
+# Restart services
+docker-compose restart
+
+# Wait for health checks (30-60 seconds)
+sleep 30
+
+# Verify connections
+./scripts/verify_setup.sh
+
+# Run tests again
+./scripts/run_tests.sh integration
+```
+
+### Redis Tests Timeout
+
+**Problem**: `asyncio.TimeoutError` in test_redis.py
+
+**Solution**:
+```bash
+# Check Redis status
+docker-compose ps redis
+docker-compose logs redis
+
+# Restart Redis
+docker-compose restart redis
+
+# Test connection
+docker-compose exec redis redis-cli ping
+
+# Should return: PONG
+```
+
+### Kafka Tests Fail
+
+**Problem**: `confluent_kafka.KafkaException` or consumer timeout
+
+**Solution**:
+```bash
+# Kafka depends on Zookeeper - check both
+docker-compose ps zookeeper kafka
+
+# Restart Kafka stack
+docker-compose restart zookeeper
+sleep 10
+docker-compose restart kafka
+sleep 20
+
+# Verify Kafka is ready
+docker-compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
+
+# Run tests again
+poetry run pytest tests/integration/test_kafka.py -v
+```
+
+### Sandbox Tests Fail
+
+**Problem**: Docker-in-Docker issues or container errors
+
+**Solution**:
+```bash
+# Ensure Docker daemon is running
+docker ps
+
+# Check Docker socket permissions
+ls -la /var/run/docker.sock
+
+# Pull required images
+docker pull python:3.11-slim
+
+# Run tests with more verbose output
+poetry run pytest tests/integration/test_sandbox.py -vv -s
+```
+
+### Database Tests Fail
+
+**Problem**: Table doesn't exist or migration errors
+
+**Solution**:
+```bash
+# Check if migrations are applied
+docker-compose exec postgres psql -U wflo_user -d wflo -c "\dt"
+
+# Run migrations
+poetry run alembic upgrade head
+
+# Verify tables exist
+docker-compose exec postgres psql -U wflo_user -d wflo -c "
+  SELECT table_name
+  FROM information_schema.tables
+  WHERE table_schema = 'public';
+"
+
+# Run tests again
+poetry run pytest tests/integration/test_database.py -v
+```
+
+## Continuous Integration
+
+### Running Tests in CI/CD
 
 ```yaml
-# .github/workflows/ci.yml
-- name: Run unit tests
-  run: poetry run pytest tests/unit/ -v
+# Example GitHub Actions workflow
+name: Integration Tests
 
-- name: Run integration tests
-  run: |
-    docker compose up -d postgres redis
-    ./scripts/setup_test_db.sh
-    poetry run pytest tests/integration/ -v
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Start Docker services
+        run: docker-compose up -d
+
+      - name: Wait for services
+        run: sleep 30
+
+      - name: Run migrations
+        run: poetry run alembic upgrade head
+
+      - name: Run integration tests
+        run: poetry run pytest tests/integration/ -v --cov=wflo
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
 ```
 
-## Debugging Tests
+## Performance Benchmarks
 
-### Enable SQL Logging
+Typical test execution times on modern hardware:
 
-Set `database_echo=True` in test settings:
-
-```python
-# In tests/conftest.py
-@pytest.fixture(scope="session")
-def test_settings(test_db_url: str) -> Settings:
-    return Settings(
-        database_url=test_db_url,
-        database_echo=True,  # Enable SQL logging
-    )
-```
-
-### Show Print Statements
-
-```bash
-pytest tests/integration/test_database.py -v -s
-```
-
-The `-s` flag disables output capture.
-
-### Run with Debug Logging
-
-```bash
-pytest tests/integration/ -v --log-cli-level=DEBUG
-```
-
-### Drop into Debugger on Failure
-
-```bash
-pytest tests/integration/ -v --pdb
-```
-
-### Inspect Database State
-
-```bash
-# Connect to test database
-docker compose exec postgres psql -U wflo_user -d wflo_test
-
-# List tables
-\dt
-
-# Query tables
-SELECT * FROM workflow_definitions;
-```
-
-## Troubleshooting
-
-### Database Connection Refused
-
-**Problem**: `ConnectionRefusedError: [Errno 111] Connect call failed`
-
-**Solutions**:
-1. Ensure PostgreSQL is running: `docker compose ps postgres`
-2. Check logs: `docker compose logs postgres`
-3. Verify port: `docker compose port postgres 5432`
-
-### Test Database Does Not Exist
-
-**Problem**: `database "wflo_test" does not exist`
-
-**Solution**:
-```bash
-./scripts/setup_test_db.sh
-```
-
-### Tests Fail with "Table Already Exists"
-
-**Problem**: Tables already exist from previous run
-
-**Solution**:
-```bash
-./scripts/cleanup_test_db.sh
-./scripts/setup_test_db.sh
-```
-
-### Slow Tests
-
-**Problem**: Tests take too long
-
-**Solutions**:
-1. Run unit tests only: `pytest tests/unit/ -v`
-2. Run without coverage: `pytest -v --no-cov`
-3. Run specific test: `pytest tests/unit/test_models.py::test_specific -v`
-4. Use parallel execution: `pytest -n auto` (requires pytest-xdist)
-
-### Import Errors
-
-**Problem**: `ModuleNotFoundError: No module named 'wflo'`
-
-**Solution**:
-```bash
-# Install package in editable mode
-poetry install
-
-# Or activate virtual environment
-poetry shell
-```
+| Test Suite | Duration | CPU | Memory |
+|------------|----------|-----|--------|
+| Unit tests | < 5s | Low | < 100MB |
+| Database tests | 5-10s | Low | < 200MB |
+| Redis tests | 10-15s | Low | < 150MB |
+| Kafka tests | 15-25s | Medium | < 300MB |
+| Temporal tests | 20-30s | Medium | < 500MB |
+| Sandbox tests | 30-60s | High | < 1GB |
+| **All integration** | **45-90s** | **Medium** | **< 2GB** |
 
 ## Best Practices
 
-1. **Write tests first** - Test-driven development (TDD)
-2. **One assertion per test** - Keep tests focused
-3. **Use descriptive test names** - `test_create_workflow_with_invalid_dag_raises_error`
-4. **Mock external dependencies** in unit tests
-5. **Use fixtures** - Avoid code duplication
-6. **Clean up after tests** - Use fixtures for automatic cleanup
-7. **Test edge cases** - Not just happy paths
-8. **Keep tests fast** - Unit tests should be < 1 second
-9. **Isolate tests** - Tests should not depend on each other
-10. **Test behavior, not implementation** - Focus on outcomes
+### Before Running Tests
 
-## Performance Tips
+1. ✅ Ensure Docker services are healthy
+2. ✅ Run `./scripts/verify_setup.sh`
+3. ✅ Check disk space (at least 5GB free)
+4. ✅ Close resource-intensive applications
 
-1. **Use session-scoped fixtures** for expensive setup
-2. **Reuse database connections** when possible
-3. **Mock slow operations** in unit tests
-4. **Run tests in parallel**: `pytest -n auto`
-5. **Skip slow tests** during development: `pytest -m "not slow"`
-6. **Use `--lf`** to run last failed tests: `pytest --lf`
-7. **Use `--ff`** to run failed first: `pytest --ff`
+### During Test Development
 
-## Resources
+1. ✅ Run specific test file first
+2. ✅ Use `-s` flag to see print statements
+3. ✅ Add `--tb=short` for concise tracebacks
+4. ✅ Use `--pdb` to debug on failure
 
-- [Pytest Documentation](https://docs.pytest.org/)
-- [Pytest-asyncio](https://pytest-asyncio.readthedocs.io/)
-- [SQLAlchemy Testing](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites)
-- [Temporal Testing](https://docs.temporal.io/develop/python/testing-suite)
+### After Tests Pass
+
+1. ✅ Check coverage report
+2. ✅ Review test output for warnings
+3. ✅ Commit passing tests
+4. ✅ Update documentation if needed
+
+## Quick Reference Commands
+
+```bash
+# Verify setup
+./scripts/verify_setup.sh
+
+# Run all integration tests
+./scripts/run_tests.sh integration
+
+# Run specific test file
+poetry run pytest tests/integration/test_redis.py -v
+
+# Run with coverage
+poetry run pytest tests/integration/ --cov=wflo --cov-report=html
+
+# Debug failing test
+poetry run pytest tests/integration/test_kafka.py::TestKafkaProducer::test_send_workflow_event -vv -s --pdb
+
+# Run tests matching pattern
+poetry run pytest tests/integration/ -k "cache or lock" -v
+
+# List all tests without running
+poetry run pytest tests/integration/ --collect-only
+
+# Run tests in parallel (faster)
+poetry run pytest tests/integration/ -n auto
+```
+
+## Need Help?
+
+- **Documentation**: See `GETTING_STARTED.md`
+- **Setup Issues**: Run `./scripts/verify_setup.sh`
+- **Test Failures**: Check service logs with `docker-compose logs <service>`
+- **Questions**: Open an issue on GitHub
+
+---
+
+**Pro Tip**: Run `./scripts/verify_setup.sh` before every test session to catch issues early!

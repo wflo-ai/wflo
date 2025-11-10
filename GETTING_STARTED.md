@@ -2,23 +2,18 @@
 
 This guide will walk you through setting up Wflo locally and running your first workflow.
 
-## ⚠️ Important: Python Version
-
-**Use Python 3.11 or 3.12 only.** Python 3.13 is not yet supported due to asyncpg compatibility.
-
-If you have Python 3.13, see **PYTHON_VERSION_FIX.md** for detailed instructions on switching to Python 3.11 or 3.12.
-
 ## Prerequisites
 
 ### Required Software
 
-- **Docker Desktop** (v24.0+)
-- **Python 3.11 or 3.12** (NOT 3.13)
-- **Poetry** (Python dependency manager)
+- **Docker Desktop** (v24.0+) - For running infrastructure services
+- **Python 3.11 or 3.12** - ⚠️ **NOT Python 3.13** (asyncpg incompatibility)
+- **Poetry** - Python dependency manager
 
 ### Install Prerequisites
 
 #### macOS
+
 ```bash
 # Install Homebrew (if not already installed)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -28,15 +23,15 @@ brew install python@3.11
 
 # Install Poetry
 curl -sSL https://install.python-poetry.org | python3 -
+# Add Poetry to PATH: export PATH="$HOME/.local/bin:$PATH"
 
 # Install Docker Desktop
 brew install --cask docker
-
-# Start Docker Desktop
-open -a Docker
+# Start Docker Desktop from Applications
 ```
 
 #### Linux (Ubuntu/Debian)
+
 ```bash
 # Install Python 3.11
 sudo apt update
@@ -44,503 +39,399 @@ sudo apt install python3.11 python3.11-venv python3-pip
 
 # Install Poetry
 curl -sSL https://install.python-poetry.org | python3 -
+export PATH="$HOME/.local/bin:$PATH"
 
-# Install Docker
+# Install Docker and Docker Compose
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 newgrp docker
-
-# Install Docker Compose
-sudo apt install docker-compose-plugin
 ```
 
 #### Windows
-```powershell
-# Install Python 3.11 from python.org
-# Download from: https://www.python.org/downloads/
 
-# Install Poetry
+```powershell
+# Install Python 3.11
+# Download from: https://www.python.org/downloads/release/python-3118/
+
+# Install Poetry (PowerShell)
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
 
 # Install Docker Desktop
-# Download from: https://www.docker.com/products/docker-desktop
+# Download from: https://www.docker.com/products/docker-desktop/
 ```
+
+### Python 3.13 Compatibility Issue
+
+**If you have Python 3.13 installed**, you need to switch to Python 3.11 or 3.12 because the `asyncpg` library (used for PostgreSQL) doesn't support Python 3.13 yet.
+
+```bash
+# Check your Python version
+python3 --version
+
+# If it shows Python 3.13.x, install Python 3.11:
+
+# macOS
+brew install python@3.11
+
+# Linux
+sudo apt install python3.11
+
+# Configure Poetry to use Python 3.11
+poetry env use python3.11
+poetry env info  # Verify it's using 3.11
+
+# Verify
+poetry run python --version  # Should output: Python 3.11.x
+```
+
+**Why not Python 3.13?**
+Python 3.13 introduced breaking C API changes that affect `asyncpg` (a Cython-based PostgreSQL driver). Until asyncpg releases Python 3.13 support, use Python 3.11 or 3.12.
 
 ## Installation
 
-### 1. Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/wflo-ai/wflo.git
 cd wflo
 ```
 
-### 2. Install Python Dependencies
+### Step 2: Install Python Dependencies
 
 ```bash
-# Install dependencies using Poetry
+# Ensure you're using Python 3.11 or 3.12
+poetry env use python3.11  # or python3.12
+
+# Install all dependencies
 poetry install
 
-# Activate virtual environment
-poetry shell
-```
-
-### 3. Configure Environment
-
-```bash
-# Copy example environment file
-cp .env.example .env
-
-# Edit .env with your settings (optional)
-nano .env
-```
-
-Default `.env` configuration:
-```env
-# Application
-APP_ENV=development
-LOG_LEVEL=INFO
-
-# Database
-DATABASE_URL=postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo
-
-# Redis
-REDIS_URL=redis://localhost:6379/0
-
-# Kafka
-KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-
-# Temporal
-TEMPORAL_HOST=localhost:7233
-
-# Observability
-OPENTELEMETRY_ENABLED=true
-OPENTELEMETRY_OTLP_ENDPOINT=localhost:4317
-LOG_JSON_OUTPUT=false
-```
-
-## Starting Infrastructure Services
-
-### 1. Start All Services
-
-```bash
-# Start PostgreSQL, Redis, Kafka, Temporal, and Jaeger
-docker-compose up -d
-
-# Wait for services to be healthy (30-60 seconds)
-docker-compose ps
+# This will install:
+# - Temporal SDK for workflow orchestration
+# - SQLAlchemy for database ORM
+# - Redis client for caching
+# - Kafka client for event streaming
+# - OpenTelemetry for observability
+# - tokencost for LLM cost tracking
+# - And 40+ other dependencies
 ```
 
 Expected output:
 ```
-NAME                STATUS                   PORTS
-wflo-postgres       Up (healthy)            0.0.0.0:5432->5432/tcp
-wflo-redis          Up (healthy)            0.0.0.0:6379->6379/tcp
-wflo-kafka          Up (healthy)            0.0.0.0:9092->9092/tcp
-wflo-zookeeper      Up (healthy)            0.0.0.0:2181->2181/tcp
-wflo-temporal       Up (healthy)            0.0.0.0:7233->7233/tcp
-wflo-temporal-web   Up                      0.0.0.0:8233->8080/tcp
-wflo-jaeger         Up                      0.0.0.0:16686->16686/tcp
+Installing dependencies from lock file
+
+Package operations: 50+ installs, 0 updates, 0 removals
+
+  • Installing ...
+
+Writing lock file
+
+Installing the current project: wflo (0.1.0)
 ```
 
-### 2. Verify Services
+### Step 3: Start Infrastructure Services
 
 ```bash
-# Test PostgreSQL
-docker-compose exec postgres pg_isready -U wflo_user
+# Start all Docker services in detached mode
+docker compose up -d
 
-# Test Redis
-docker-compose exec redis redis-cli ping
-
-# Test Kafka
-docker-compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
-
-# Test Temporal
-docker-compose exec temporal tctl cluster health
+# Services starting:
+# - PostgreSQL (database)
+# - Redis (caching & locks)
+# - Kafka + Zookeeper (event streaming)
+# - Temporal (workflow engine)
+# - Temporal Web UI
+# - Jaeger (tracing)
 ```
 
-### 3. View Service UIs
+**Wait 30-60 seconds** for services to fully initialize, especially Temporal which needs to run database migrations.
 
-- **Temporal Web UI**: http://localhost:8233
-- **Jaeger Tracing**: http://localhost:16686
+**Verify services are running:**
+```bash
+docker compose ps
 
-## Database Setup
+# Expected output (all should show "Up" or "Up (healthy)"):
+# wflo-postgres      Up (healthy)
+# wflo-redis         Up (healthy)
+# wflo-kafka         Up (healthy)
+# wflo-zookeeper     Up (healthy)
+# wflo-temporal      Up (healthy)
+# wflo-temporal-web  Up
+# wflo-jaeger        Up
+```
 
-### 1. Run Migrations
+**Troubleshooting:**
+- If Temporal shows as "Up" but not "(healthy)", wait another 30 seconds
+- Check logs: `docker compose logs temporal`
+- If services fail to start: `docker compose down && docker compose up -d`
+
+### Step 4: Initialize Database
 
 ```bash
-# Apply database migrations
+# Run Alembic migrations to create database schema
 poetry run alembic upgrade head
-```
 
-### 2. Verify Database
-
-```bash
-# Connect to PostgreSQL
-docker-compose exec postgres psql -U wflo_user -d wflo
-
-# List tables
-\dt
-
-# Expected tables:
+# This creates tables for:
 # - workflow_definitions
 # - workflow_executions
-# - execution_steps
-# - approval_requests
-# - state_snapshots
+# - workflow_history
+# - task_metadata
+# - sandbox_configurations
 # - cost_tracking
-
-# Exit psql
-\q
 ```
 
-## Running Tests
+Expected output:
+```
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade -> 001_initial_schema
+INFO  [alembic.runtime.migration] Running upgrade 001 -> 002_add_cost_tracking
+...
+```
 
-### Unit Tests (No Docker Required)
+### Step 5: Verify Setup
 
 ```bash
-# Run unit tests (fast, no external dependencies)
-poetry run pytest tests/unit/ -v
+# Run the comprehensive verification script
+./scripts/verify_setup.sh
 ```
 
-### Integration Tests (Requires Docker)
+This checks:
+- ✅ Prerequisites (Python, Poetry, Docker)
+- ✅ Docker services are running
+- ✅ Service connections (PostgreSQL, Redis, Kafka, Temporal)
+- ✅ Python environment and dependencies
+- ✅ Database tables exist
+- ✅ Test suite is available
+
+Expected output:
+```
+🔍 Wflo Setup Verification
+==========================
+
+📋 Checking Prerequisites...
+✓ Python 3 installed: 3.11.x
+✓ Poetry installed: 1.x.x
+✓ Docker installed: 24.x.x
+✓ Docker Compose available
+
+🐳 Checking Docker Services...
+✓ postgres is running
+✓ redis is running
+✓ kafka is running
+✓ zookeeper is running
+✓ temporal is running
+
+🔌 Testing Service Connections...
+✓ PostgreSQL connection OK
+✓ Redis connection OK
+✓ Kafka connection OK
+✓ Temporal connection OK
+
+🐍 Checking Python Environment...
+✓ Poetry virtual environment exists
+✓ Wflo package installed
+✓ All dependencies installed
+
+🗄️  Checking Database...
+✓ Alembic configuration found
+✓ Database tables exist
+
+📊 Setup Summary
+================
+✓ All infrastructure services are running
+
+✨ Ready to develop!
+```
+
+### Step 6: Run Tests
 
 ```bash
-# Ensure Docker services are running
-docker-compose ps
+# Run all integration tests (requires Docker services)
+./scripts/run_tests.sh integration
 
-# Run all integration tests
-poetry run pytest tests/integration/ -v
-
-# Run specific test files
-poetry run pytest tests/integration/test_database.py -v
-poetry run pytest tests/integration/test_redis.py -v
-poetry run pytest tests/integration/test_kafka.py -v
-poetry run pytest tests/integration/test_temporal.py -v
-poetry run pytest tests/integration/test_sandbox.py -v
-poetry run pytest tests/integration/test_cost_tracking.py -v
-
-# Run with coverage
-poetry run pytest tests/integration/ --cov=wflo --cov-report=html
-
-# View coverage report
-open htmlcov/index.html  # macOS
-xdg-open htmlcov/index.html  # Linux
-start htmlcov/index.html  # Windows
+# This runs 100+ tests covering:
+# - Database operations (15 tests)
+# - Redis caching and locks (20+ tests)
+# - Kafka event streaming (20+ tests)
+# - Cost tracking (11 tests)
+# - Temporal workflows (10+ tests)
+# - Sandbox execution (30+ tests)
 ```
 
-### Test Results Summary
-
-After running integration tests, you should see:
-
-```
-tests/integration/test_database.py .............           [15 passed]
-tests/integration/test_redis.py ....................       [20 passed]
-tests/integration/test_kafka.py .................          [17 passed]
-tests/integration/test_temporal.py ..........              [10 passed]
-tests/integration/test_sandbox.py ........................ [30+ passed]
-tests/integration/test_cost_tracking.py ...........        [11 passed]
-
-======================== 100+ passed in 45.23s =========================
-```
+**All tests should pass.** If any fail:
+1. Check Docker services: `docker compose ps`
+2. Check logs: `docker compose logs <service-name>`
+3. Restart services: `docker compose restart`
 
 ## Running Your First Workflow
 
-### 1. Start Temporal Worker
+### Terminal 1: Start Temporal Worker
 
 ```bash
-# Terminal 1: Start the Temporal worker
+# The worker processes workflow tasks
 poetry run python -m wflo.temporal.worker
 ```
 
-You should see:
+Expected output:
 ```
-INFO:wflo.temporal.worker:Starting Temporal worker...
-INFO:wflo.temporal.worker:Worker started on task queue: wflo-tasks
+INFO:wflo.temporal.worker:Starting Temporal worker
+INFO:wflo.temporal.worker:Connecting to Temporal at localhost:7233
+INFO:wflo.temporal.worker:Worker started for task queue: wflo-task-queue
 ```
 
-### 2. Execute a Workflow
+### Terminal 2: Execute a Workflow
 
 ```bash
-# Terminal 2: Run example workflow
+# Run a simple example workflow
 poetry run python examples/simple_workflow.py
 ```
 
-### 3. View Workflow in Temporal UI
+The workflow will:
+1. Execute in an isolated sandbox
+2. Track costs automatically
+3. Log all operations with structured logging
+4. Create distributed traces in Jaeger
+5. Emit events to Kafka
 
-1. Open http://localhost:8233
-2. Click on your workflow execution
-3. View execution history, events, and results
+### View Workflow Execution
 
-## Monitoring & Observability
+**Temporal Web UI:**
+- Open: http://localhost:8233
+- Navigate to "Workflows" to see execution history
+- Click on a workflow to see detailed execution logs
 
-### Structured Logging
+**Jaeger Tracing UI:**
+- Open: http://localhost:16686
+- Select "wflo" service from dropdown
+- View distributed traces across workflow activities
 
-View logs with structured output:
+## Next Steps
 
-```bash
-# Follow Temporal worker logs
-poetry run python -m wflo.temporal.worker
+### Explore the Codebase
 
-# Logs are in JSON format (production) or colored format (development)
+```
+wflo/
+├── wflo/
+│   ├── config.py              # Configuration management
+│   ├── cost/                  # Cost tracking (tokencost integration)
+│   ├── observability/         # Logging, tracing, metrics
+│   ├── cache/                 # Redis caching & distributed locks
+│   ├── events/                # Kafka event streaming
+│   ├── database/              # SQLAlchemy models and ORM
+│   ├── temporal/              # Workflow definitions
+│   └── sandbox/               # Code execution sandboxes
+├── tests/
+│   ├── unit/                  # Unit tests (no Docker required)
+│   └── integration/           # Integration tests (requires Docker)
+├── scripts/                   # Utility scripts
+└── examples/                  # Example workflows
 ```
 
-Example log output:
-```json
-{
-  "event": "workflow_started",
-  "workflow_id": "data-pipeline",
-  "execution_id": "exec-123",
-  "timestamp": "2025-01-15T10:30:00Z",
-  "trace_id": "550e8400e29b41d4a716446655440000",
-  "span_id": "a716446655440000"
-}
-```
+### Read the Documentation
 
-### Distributed Tracing
+- **[README.md](README.md)** - Project overview and architecture
+- **[TESTING.md](TESTING.md)** - Comprehensive testing guide
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 
-View traces in Jaeger UI:
-
-1. Open http://localhost:16686
-2. Select service: `wflo`
-3. View traces for workflow executions
-4. See database queries, Redis calls, Kafka messages
-
-### Kafka Event Streaming
-
-Monitor events in Kafka:
+### Development Workflow
 
 ```bash
-# List topics
-docker-compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
+# 1. Start infrastructure (once)
+docker compose up -d
 
-# Consume workflow events
-docker-compose exec kafka kafka-console-consumer \
-  --bootstrap-server localhost:9092 \
-  --topic wflo.workflows \
-  --from-beginning
+# 2. Make code changes
+# ... edit files ...
 
-# Consume cost events
-docker-compose exec kafka kafka-console-consumer \
-  --bootstrap-server localhost:9092 \
-  --topic wflo.costs \
-  --from-beginning
-```
+# 3. Run tests
+poetry run pytest tests/unit/ -v                    # Unit tests (fast)
+poetry run pytest tests/integration/test_X.py -v    # Specific integration test
 
-### Redis Cache Monitoring
+# 4. Run the worker and test your workflow
+poetry run python -m wflo.temporal.worker           # Terminal 1
+poetry run python examples/your_workflow.py         # Terminal 2
 
-```bash
-# Connect to Redis
-docker-compose exec redis redis-cli
+# 5. Check traces and logs
+# - Jaeger: http://localhost:16686
+# - Temporal UI: http://localhost:8233
 
-# View cached LLM responses
-KEYS llm_cache:*
-
-# View distributed locks
-KEYS lock:*
-
-# Monitor cache hit rate
-INFO stats
-
-# Exit Redis CLI
-exit
-```
-
-## Common Tasks
-
-### Reset Database
-
-```bash
-# Drop all tables and re-run migrations
-docker-compose exec postgres psql -U wflo_user -d wflo -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-poetry run alembic upgrade head
-```
-
-### Clear Redis Cache
-
-```bash
-# Flush all Redis data
-docker-compose exec redis redis-cli FLUSHALL
-```
-
-### View Kafka Topics
-
-```bash
-# Create topic manually
-docker-compose exec kafka kafka-topics --create \
-  --topic wflo.custom \
-  --partitions 3 \
-  --replication-factor 1 \
-  --bootstrap-server localhost:9092
-
-# Describe topic
-docker-compose exec kafka kafka-topics --describe \
-  --topic wflo.workflows \
-  --bootstrap-server localhost:9092
-```
-
-### Stop All Services
-
-```bash
-# Stop services
-docker-compose down
-
-# Stop and remove volumes (destroys data)
-docker-compose down -v
+# 6. Stop services when done
+docker compose down
 ```
 
 ## Troubleshooting
 
-### Docker Services Won't Start
+### Issue: `poetry install` fails with asyncpg compilation error
 
-**Problem**: `Error response from daemon: Ports are not available`
+**Cause:** Using Python 3.13 (not supported)
 
-**Solution**:
+**Solution:**
 ```bash
-# Check what's using the port
-lsof -i :5432  # PostgreSQL
-lsof -i :6379  # Redis
-lsof -i :9092  # Kafka
-
-# Kill the process or change port in docker-compose.yml
+poetry env use python3.11
+poetry install
 ```
 
-### Database Connection Error
+### Issue: Temporal service won't start
 
-**Problem**: `asyncpg.exceptions.ConnectionDoesNotExistError`
-
-**Solution**:
+**Check logs:**
 ```bash
-# Check if PostgreSQL is running
-docker-compose ps postgres
-
-# Check logs
-docker-compose logs postgres
-
-# Restart PostgreSQL
-docker-compose restart postgres
+docker compose logs temporal
 ```
 
-### Redis Connection Refused
-
-**Problem**: `redis.exceptions.ConnectionError: Connection refused`
-
-**Solution**:
+**Common fixes:**
 ```bash
-# Check if Redis is running
-docker-compose ps redis
+# Remove and recreate container
+docker compose stop temporal
+docker compose rm -f temporal
+docker compose up -d temporal
 
-# Test connection
-docker-compose exec redis redis-cli ping
-
-# Restart Redis
-docker-compose restart redis
+# Wait 30 seconds, then verify
+docker compose exec temporal tctl --address temporal:7233 cluster health
 ```
 
-### Kafka Connection Error
+### Issue: Database tables not found
 
-**Problem**: `confluent_kafka.KafkaException: Failed to connect`
-
-**Solution**:
+**Run migrations:**
 ```bash
-# Kafka depends on Zookeeper - check both
-docker-compose ps zookeeper kafka
-
-# Restart Kafka stack
-docker-compose restart zookeeper
-docker-compose restart kafka
-```
-
-### Temporal Worker Won't Connect
-
-**Problem**: `temporalio.service.RPCError: failed to dial`
-
-**Solution**:
-```bash
-# Check Temporal health
-docker-compose exec temporal tctl cluster health
-
-# Restart Temporal
-docker-compose restart temporal
-
-# Wait 30 seconds for startup
-sleep 30
-```
-
-### Integration Tests Fail
-
-**Problem**: Tests fail with connection errors
-
-**Solution**:
-```bash
-# Ensure all services are healthy
-docker-compose ps
-
-# Wait for health checks to pass
-docker-compose up -d
-sleep 30
-
-# Run tests again
-poetry run pytest tests/integration/ -v
-```
-
-## Next Steps
-
-- **Read the Documentation**: Explore `/docs` for detailed guides
-- **Try Example Workflows**: Check `/examples` directory
-- **Explore the API**: Review code in `/src/wflo`
-- **Join the Community**: GitHub Discussions and Discord
-
-## Development Workflow
-
-### Code Quality Checks
-
-```bash
-# Format code
-poetry run black src/ tests/
-
-# Lint code
-poetry run ruff check src/ tests/
-
-# Type check
-poetry run mypy src/
-
-# Run all checks
-poetry run black src/ tests/ && poetry run ruff check src/ tests/ && poetry run mypy src/
-```
-
-### Creating Database Migrations
-
-```bash
-# Create a new migration
-poetry run alembic revision --autogenerate -m "Add new table"
-
-# Review migration file in alembic/versions/
-
-# Apply migration
 poetry run alembic upgrade head
 ```
 
-### Adding Dependencies
+### Issue: Tests failing
 
+**Ensure services are healthy:**
 ```bash
-# Add runtime dependency
-poetry add package-name
-
-# Add development dependency
-poetry add --group dev package-name
-
-# Update lock file
-poetry lock
+docker compose ps  # All should show "Up (healthy)"
+./scripts/verify_setup.sh
 ```
 
-## Additional Resources
+**Restart services:**
+```bash
+docker compose restart
+sleep 30
+./scripts/run_tests.sh integration
+```
 
-- **Documentation**: https://docs.wflo.ai
-- **GitHub**: https://github.com/wflo-ai/wflo
-- **Issues**: https://github.com/wflo-ai/wflo/issues
-- **Discussions**: https://github.com/wflo-ai/wflo/discussions
+### Issue: Port already in use
+
+**Check what's using the port:**
+```bash
+# PostgreSQL (5432)
+lsof -i :5432
+
+# Redis (6379)
+lsof -i :6379
+
+# Temporal (7233)
+lsof -i :7233
+```
+
+**Solution:** Stop the conflicting service or change ports in `docker-compose.yml`
+
+## Getting Help
+
+- **GitHub Issues**: [https://github.com/wflo-ai/wflo/issues](https://github.com/wflo-ai/wflo/issues)
+- **GitHub Discussions**: [https://github.com/wflo-ai/wflo/discussions](https://github.com/wflo-ai/wflo/discussions)
+- **Documentation**: [README.md](README.md), [TESTING.md](TESTING.md)
 
 ---
 
-**Need Help?** Open an issue on GitHub or join our community discussions!
+**You're all set!** 🎉 Start building secure AI agent workflows with Wflo.
