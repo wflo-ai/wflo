@@ -1,0 +1,312 @@
+/**
+ * Wflo - Midjourney-inspired Design System
+ * Dark theme with Inter font and teal accent
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Midjourney-inspired colors */
+  --ifm-color-primary: #00d4aa;
+  --ifm-color-primary-dark: #00bfa0;
+  --ifm-color-primary-darker: #00b596;
+  --ifm-color-primary-darkest: #00967d;
+  --ifm-color-primary-light: #00e9b4;
+  --ifm-color-primary-lighter: #00f3be;
+  --ifm-color-primary-lightest: #1affcd;
+
+  /* Background colors */
+  --ifm-background-color: #0a0a0a;
+  --ifm-background-surface-color: #141414;
+
+  /* Text colors */
+  --ifm-font-color-base: #ffffff;
+  --ifm-font-color-secondary: #8a8a8a;
+
+  /* Typography */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.6;
+  --ifm-heading-font-weight: 600;
+  --ifm-font-weight-semibold: 600;
+  --ifm-font-weight-bold: 700;
+
+  /* Spacing */
+  --ifm-spacing-horizontal: 1.5rem;
+  --ifm-spacing-vertical: 1.5rem;
+
+  /* Border radius */
+  --ifm-global-radius: 6px;
+  --ifm-code-border-radius: 6px;
+
+  /* Code blocks */
+  --ifm-code-font-size: 0.875rem;
+  --ifm-code-background: #0f0f0f;
+  --ifm-code-padding-horizontal: 0.5rem;
+  --ifm-code-padding-vertical: 0.2rem;
+
+  /* Borders */
+  --ifm-global-border-width: 1px;
+  --ifm-hr-border-color: #222222;
+
+  /* Navbar */
+  --ifm-navbar-background-color: rgba(10, 10, 10, 0.98);
+  --ifm-navbar-height: 60px;
+  --ifm-navbar-padding-horizontal: 1.5rem;
+  --ifm-navbar-padding-vertical: 0.75rem;
+
+  /* Footer */
+  --ifm-footer-background-color: #0a0a0a;
+  --ifm-footer-padding-vertical: 3rem;
+
+  /* Sidebar */
+  --doc-sidebar-width: 280px;
+
+  /* Antialiasing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark mode overrides */
+[data-theme='dark'] {
+  --ifm-background-color: #0a0a0a;
+  --ifm-background-surface-color: #141414;
+  --ifm-font-color-base: #ffffff;
+  --ifm-font-color-secondary: #8a8a8a;
+  --ifm-heading-color: #ffffff;
+  --ifm-menu-color: #8a8a8a;
+  --ifm-menu-color-active: #00d4aa;
+  --ifm-toc-border-color: #222222;
+  --ifm-table-border-color: #222222;
+  --ifm-hr-background-color: #222222;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ifm-font-color-base);
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Links */
+a {
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+  text-decoration: none;
+}
+
+/* Navbar */
+.navbar {
+  border-bottom: 1px solid #222222;
+  backdrop-filter: blur(10px);
+}
+
+.navbar__title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.navbar__link {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Sidebar */
+.theme-doc-sidebar-container {
+  border-right: 1px solid #222222;
+}
+
+.menu__link {
+  font-size: 0.9rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.menu__link:hover {
+  background-color: #141414;
+}
+
+.menu__link--active {
+  background-color: #141414;
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+/* Code blocks */
+pre {
+  background: #0f0f0f !important;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+code {
+  background: #1a1a1a;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.875rem;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  margin: 2rem 0;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background: #141414;
+}
+
+th {
+  font-weight: 600;
+  text-transform: none;
+  font-size: 0.875rem;
+  padding: 1rem;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #222222;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background: #141414;
+}
+
+/* Buttons */
+.button {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.button--primary {
+  background: var(--ifm-color-primary);
+  color: #0a0a0a;
+  border: 1px solid var(--ifm-color-primary);
+}
+
+.button--primary:hover {
+  background: transparent;
+  color: var(--ifm-color-primary);
+}
+
+.button--secondary {
+  background: transparent;
+  border: 1px solid #222222;
+  color: var(--ifm-font-color-base);
+}
+
+.button--secondary:hover {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+/* Cards */
+.card {
+  background: #141414;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  padding: 2rem;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  transform: translateY(-2px);
+}
+
+/* Badges */
+.badge {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.badge--primary {
+  background: transparent;
+  color: var(--ifm-color-primary);
+  border: 1px solid var(--ifm-color-primary);
+}
+
+/* Admonitions */
+.admonition {
+  border-radius: 8px;
+  border: 1px solid #222222;
+  background: #141414;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid #222222;
+}
+
+.footer__link-item {
+  font-size: 0.9rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-primary);
+}
+
+/* Selection */
+::selection {
+  background: var(--ifm-color-primary);
+  color: #0a0a0a;
+}
+
+/* Mobile responsive */
+@media (max-width: 996px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+}
