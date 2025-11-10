@@ -152,13 +152,15 @@ function HomepageHeader() {
         >
           <TypeAnimation
             sequence={[
-              'Production-ready infrastructure for AI agents',
+              'Docker-based sandboxing with resource limits',
               2500,
-              'Sandboxed execution with safety controls',
+              'Temporal.io orchestration with durable execution',
               2500,
-              'Cost governance and approval gates',
+              'Real-time cost tracking across LLM providers',
               2500,
-              'Built for mission-critical workflows',
+              'PostgreSQL state snapshots with rollback',
+              2500,
+              'OpenTelemetry traces with Jaeger visualization',
               2500,
             ]}
             wrapper="span"
@@ -174,8 +176,8 @@ function HomepageHeader() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
         >
-          The comprehensive platform for building and deploying AI agents safely—with sandboxed execution,
-          human approval workflows, cost controls, and full observability.
+          Production-ready orchestration platform for AI agents with Docker-based sandboxing,
+          Temporal.io workflows, real-time cost tracking, and rollback capabilities. Built with Python, PostgreSQL, and OpenTelemetry.
         </motion.p>
         <motion.div
           className={styles.buttons}
@@ -248,23 +250,23 @@ function AnimatedCard({ children, className, delay = 0 }) {
 const valueProps = [
   {
     icon: Eye,
-    title: 'Visibility & Control',
-    description: 'Complete observability into every agent action with distributed tracing and real-time monitoring.',
+    title: 'Production Observability',
+    description: 'OpenTelemetry tracing, Prometheus metrics, and structured logging with Jaeger visualization for complete visibility.',
   },
   {
     icon: Zap,
-    title: 'Fast Iteration',
-    description: 'Rapid development and testing with instant feedback loops and comprehensive debugging tools.',
+    title: 'Durable Workflows',
+    description: 'Temporal.io-powered orchestration with automatic retries, exponential backoff, and failure recovery.',
   },
   {
     icon: Shield,
-    title: 'Secure Execution',
-    description: 'Sandboxed containers with strict resource limits protect your infrastructure from agent actions.',
+    title: 'Docker Sandboxing',
+    description: 'Isolated containers with CPU/memory limits, network isolation, and read-only filesystems using aiodocker.',
   },
   {
     icon: Shuffle,
-    title: 'Provider Neutral',
-    description: 'Works with any LLM provider—OpenAI, Anthropic, local models, or custom implementations.',
+    title: 'Multi-Provider Support',
+    description: 'Track costs across OpenAI, Anthropic, Cohere, and local models with unified cost attribution.',
   },
 ];
 
@@ -272,63 +274,63 @@ const valueProps = [
 const capabilities = [
   {
     icon: Lock,
-    title: 'Sandboxed Execution',
-    description: 'Every agent runs in an isolated Docker container with configurable resource limits and network policies.',
-    features: ['Docker-based isolation', 'Resource quotas (CPU, memory)', 'Network policies', 'Filesystem restrictions'],
+    title: 'Docker-Based Sandboxing',
+    description: 'Every workflow runs in isolated Docker containers with strict resource limits, network isolation, and read-only filesystems.',
+    features: ['aiodocker integration', 'CPU & memory quotas', 'Network disabled by default', 'Timeout enforcement'],
   },
   {
     icon: Hand,
     title: 'Human Approval Gates',
-    description: 'Pause workflows at critical checkpoints to require human review before proceeding with sensitive operations.',
-    features: ['Configurable approval points', 'Multi-level approvers', 'Timeout policies', 'Escalation workflows'],
+    description: 'Risk-based approval routing with Slack/webhook notifications. Auto-approve low-risk operations, require review for high-risk changes.',
+    features: ['Risk-based routing', 'Configurable approvers', 'Slack notifications', 'Complete audit trails'],
   },
   {
     icon: DollarSign,
-    title: 'Cost Governance',
-    description: 'Track and control LLM costs in real-time with automatic budget enforcement across all providers.',
-    features: ['Real-time cost tracking', 'Budget limits per workflow', 'Provider cost aggregation', 'Cost alerts'],
+    title: 'Real-Time Cost Tracking',
+    description: 'Track LLM API costs across providers with circuit breakers, multi-threshold alerts, and per-workflow budget enforcement.',
+    features: ['OpenAI/Anthropic/Cohere', 'Budget circuit breakers', '50%-75%-90% alerts', 'Cost attribution'],
   },
   {
     icon: BarChart3,
-    title: 'Full Observability',
-    description: 'Distributed tracing, metrics, and structured logging give you complete visibility into agent behavior.',
-    features: ['OpenTelemetry integration', 'Custom dashboards', 'Log aggregation', 'Performance metrics'],
+    title: 'OpenTelemetry Tracing',
+    description: 'Complete distributed traces with span tracking for each workflow step. Jaeger UI integration for trace visualization.',
+    features: ['Jaeger exporter', 'Prometheus metrics', 'structlog JSON logs', 'Correlation IDs'],
   },
   {
     icon: RotateCcw,
-    title: 'Rollback & Recovery',
-    description: 'Automatic state snapshots before critical operations allow you to roll back to any previous state.',
-    features: ['Automatic snapshots', 'Point-in-time recovery', 'State versioning', 'Rollback triggers'],
+    title: 'State Snapshots & Rollback',
+    description: 'PostgreSQL-backed state snapshots before critical operations. Point-in-time recovery with compensating transactions.',
+    features: ['Automatic snapshots', 'asyncpg persistence', 'Manual rollback API', 'State versioning'],
   },
   {
     icon: Settings,
-    title: 'Policy Engine',
-    description: 'Define complex governance policies for approval routing, cost limits, and execution controls.',
-    features: ['Declarative policy syntax', 'Conditional rules', 'Policy templates', 'Compliance presets'],
+    title: 'DAG-Based Workflows',
+    description: 'Define workflows as directed acyclic graphs with dependency resolution, parallel execution, and topological sorting.',
+    features: ['Topological sort', 'Circular dep detection', 'Parallel steps', 'Pydantic validation'],
   },
 ];
 
 // Use cases with Lucide icons
 const useCases = [
   {
-    title: 'AI Copilots',
-    description: 'Build AI assistants that can take actions on behalf of users with proper safety controls.',
+    title: 'Financial Services',
+    description: 'Fraud detection agents with mandatory approval gates for high-value transactions and complete audit trails for compliance.',
+    icon: DollarSign,
+  },
+  {
+    title: 'Healthcare & Compliance',
+    description: 'HIPAA-compliant agent workflows with sandboxed execution, data isolation, and detailed observability for audit requirements.',
+    icon: Shield,
+  },
+  {
+    title: 'E-commerce Automation',
+    description: 'Customer service agents with approval gates for refunds, cost tracking for LLM usage, and rollback for incorrect changes.',
     icon: Bot,
   },
   {
-    title: 'Workflow Automation',
-    description: 'Automate complex business processes with AI agents that require human oversight.',
-    icon: Cog,
-  },
-  {
-    title: 'Data Processing',
-    description: 'Process and analyze large datasets with AI agents while controlling costs and resources.',
+    title: 'Data Engineering',
+    description: 'ETL agents with state snapshots for recovery, budget controls to prevent runaway costs, and observability for debugging.',
     icon: Database,
-  },
-  {
-    title: 'Code Generation',
-    description: 'Generate and execute code safely in isolated environments with rollback capabilities.',
-    icon: Code2,
   },
 ];
 
@@ -417,16 +419,23 @@ function CodeBlock({ code }: { code: string }) {
 }
 
 function QuickStartSection() {
-  const codeExample = `# Install Wflo
-pip install wflo
+  const codeExample = `# Clone and set up development environment
+git clone https://github.com/wflo-ai/wflo.git
+cd wflo
 
-# Create a new workflow
-wflo init my-agent-workflow
+# Install dependencies with Poetry
+poetry install
 
-# Run with safety controls
-wflo run --budget 10.00 \\
-  --require-approval \\
-  --sandbox-mode strict`;
+# Start infrastructure (PostgreSQL, Redis, Temporal, Jaeger)
+docker-compose up -d
+
+# Run the Temporal worker
+poetry run python -m wflo.temporal.worker
+
+# Define and execute a workflow (Python SDK - Coming Soon)
+# from wflo import Workflow, WorkflowStep
+# workflow = Workflow(...)
+# result = await workflow.execute()`;
 
   return (
     <section className={styles.section}>
@@ -438,7 +447,7 @@ wflo run --budget 10.00 \\
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          Get Started in Minutes
+          Get Started (Early Development)
         </motion.h2>
         <motion.p
           className={styles.sectionSubtitle}
@@ -447,27 +456,27 @@ wflo run --budget 10.00 \\
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          Install Wflo and start building secure AI agents with just a few commands.
+          Wflo is in early development. Set up the development environment to explore the architecture and contribute.
         </motion.p>
         <div className={styles.quickStartGrid}>
           <AnimatedCard className={styles.codeBlock} delay={0.2}>
             <CodeBlock code={codeExample} />
           </AnimatedCard>
           <AnimatedCard className={styles.quickStartFeatures} delay={0.3}>
-            <h3>What you get:</h3>
+            <h3>Tech Stack:</h3>
             <ul>
-              <li><Check size={18} className={styles.checkIcon} /> Sandboxed execution environment</li>
-              <li><Check size={18} className={styles.checkIcon} /> Cost tracking and budget limits</li>
-              <li><Check size={18} className={styles.checkIcon} /> Human approval workflows</li>
-              <li><Check size={18} className={styles.checkIcon} /> Complete observability</li>
-              <li><Check size={18} className={styles.checkIcon} /> Rollback capabilities</li>
-              <li><Check size={18} className={styles.checkIcon} /> Policy enforcement</li>
+              <li><Check size={18} className={styles.checkIcon} /> Python 3.11+ with async/await</li>
+              <li><Check size={18} className={styles.checkIcon} /> Temporal.io for orchestration</li>
+              <li><Check size={18} className={styles.checkIcon} /> PostgreSQL + Redis backend</li>
+              <li><Check size={18} className={styles.checkIcon} /> Docker sandbox runtime</li>
+              <li><Check size={18} className={styles.checkIcon} /> OpenTelemetry + Jaeger</li>
+              <li><Check size={18} className={styles.checkIcon} /> Poetry dependency management</li>
             </ul>
             <Link
               className="button button--primary button--lg"
               to="/docs/getting-started"
               style={{ marginTop: '1.5rem' }}>
-              Read Full Documentation →
+              Read Architecture Docs →
             </Link>
           </AnimatedCard>
         </div>
@@ -526,8 +535,8 @@ function StatsSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <div className={styles.statNumber}>100%</div>
-            <div className={styles.statLabel}>Open Source</div>
+            <div className={styles.statNumber}>v0.1.0</div>
+            <div className={styles.statLabel}>Early Stage</div>
           </motion.div>
           <motion.div
             className={styles.stat}
@@ -537,7 +546,7 @@ function StatsSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div className={styles.statNumber}>Apache 2.0</div>
-            <div className={styles.statLabel}>Licensed</div>
+            <div className={styles.statLabel}>Open Source</div>
           </motion.div>
           <motion.div
             className={styles.stat}
@@ -546,7 +555,7 @@ function StatsSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className={styles.statNumber}>Python</div>
+            <div className={styles.statNumber}>Python 3.11+</div>
             <div className={styles.statLabel}>Built With</div>
           </motion.div>
         </div>
@@ -557,18 +566,18 @@ function StatsSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2>Ready to build secure AI agents?</h2>
-          <p>Join developers building production-ready AI workflows with safety controls.</p>
+          <h2>Building in public. Join the journey.</h2>
+          <p>Wflo is in active development. Star the repo, contribute code, or follow along as we build production-ready AI agent infrastructure.</p>
           <div className={styles.buttons}>
             <Link
               className="button button--primary button--lg"
-              to="/docs/getting-started">
-              Get Started
+              to="https://github.com/wflo-ai/wflo">
+              Star on GitHub
             </Link>
             <Link
               className="button button--secondary button--lg"
-              to="https://github.com/wflo-ai/wflo">
-              Star on GitHub
+              to="/docs/getting-started">
+              Read the Docs
             </Link>
           </div>
         </motion.div>
