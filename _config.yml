@@ -11,10 +11,12 @@ remote_theme: pages-themes/minimal@v0.2.0
 # Build settings
 markdown: kramdown
 kramdown:
+  input: GFM
   syntax_highlighter: rouge
   syntax_highlighter_opts:
     block:
       line_numbers: false
+  parse_block_html: true
 
 # Exclude
 exclude:
