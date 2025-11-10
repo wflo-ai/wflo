@@ -11,18 +11,18 @@ function HomepageHeader() {
   return (
     <header className={clsx('hero', styles.heroBanner)}>
       <div className="container">
-        <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
+        <h1 className={styles.heroTitle}>Engineer reliable AI agents</h1>
         <div className={styles.heroTagline}>
           <TypeAnimation
             sequence={[
-              'The secure runtime for AI agents',
-              2000,
-              'Production-ready AI infrastructure',
-              2000,
-              'Enterprise-grade safety controls',
-              2000,
+              'Production-ready infrastructure for AI agents',
+              2500,
+              'Sandboxed execution with safety controls',
+              2500,
+              'Cost governance and approval gates',
+              2500,
               'Built for mission-critical workflows',
-              2000,
+              2500,
             ]}
             wrapper="span"
             speed={50}
@@ -32,8 +32,8 @@ function HomepageHeader() {
           />
         </div>
         <p className={styles.heroSubtitle}>
-          Production-ready infrastructure for running AI agents safely with sandboxed execution,
-          human approval gates, cost governance, and full observability.
+          The comprehensive platform for building and deploying AI agents safely—with sandboxed execution,
+          human approval workflows, cost controls, and full observability.
         </p>
         <div className={styles.buttons}>
           <Link
@@ -47,148 +47,267 @@ function HomepageHeader() {
             ⭐ View on GitHub
           </Link>
         </div>
+        <div className={styles.statusBadge}>
+          ⚠️ Early Development - Not production ready yet
+        </div>
       </div>
     </header>
   );
 }
 
-const problems = [
+// Value propositions - 4 key benefits
+const valueProps = [
   {
-    icon: '💸',
-    title: 'Runaway Costs',
-    description: 'One misconfigured agent can burn thousands in API fees before you notice.',
+    icon: '👁️',
+    title: 'Visibility & Control',
+    description: 'Complete observability into every agent action with distributed tracing and real-time monitoring.',
   },
   {
-    icon: '🔒',
-    title: 'Security Risks',
-    description: 'Agents executing arbitrary code without isolation puts your systems at risk.',
+    icon: '⚡',
+    title: 'Fast Iteration',
+    description: 'Rapid development and testing with instant feedback loops and comprehensive debugging tools.',
   },
   {
-    icon: '🚫',
-    title: 'Irreversible Actions',
-    description: 'No way to undo mistakes when agents make wrong decisions.',
+    icon: '🛡️',
+    title: 'Secure Execution',
+    description: 'Sandboxed containers with strict resource limits protect your infrastructure from agent actions.',
   },
   {
-    icon: '📊',
-    title: 'No Visibility',
-    description: 'Can\'t debug what agents actually did or why they made certain decisions.',
-  },
-  {
-    icon: '⚖️',
-    title: 'Compliance Gaps',
-    description: 'No audit trails or approval workflows for regulated industries.',
-  },
-  {
-    icon: '🎯',
-    title: 'The Solution',
-    description: 'Wflo provides enterprise-grade safety controls for production AI workflows.',
+    icon: '🔀',
+    title: 'Provider Neutral',
+    description: 'Works with any LLM provider—OpenAI, Anthropic, local models, or custom implementations.',
   },
 ];
 
-const features = [
+// Core capabilities
+const capabilities = [
   {
-    title: '🛡️ Sandboxed Execution',
-    description: 'Isolated container environments with strict resource limits. No agent can access your host system.',
+    icon: '🔒',
+    title: 'Sandboxed Execution',
+    description: 'Every agent runs in an isolated Docker container with configurable resource limits and network policies.',
+    features: ['Docker-based isolation', 'Resource quotas (CPU, memory)', 'Network policies', 'Filesystem restrictions'],
   },
   {
-    title: '✋ Human Approval Gates',
-    description: 'Pause workflows at critical checkpoints. Define approvers, timeouts, and escalation policies.',
+    icon: '✋',
+    title: 'Human Approval Gates',
+    description: 'Pause workflows at critical checkpoints to require human review before proceeding with sensitive operations.',
+    features: ['Configurable approval points', 'Multi-level approvers', 'Timeout policies', 'Escalation workflows'],
   },
   {
-    title: '💰 Cost Governance',
-    description: 'Real-time cost tracking across all LLM providers with automatic budget enforcement.',
+    icon: '💰',
+    title: 'Cost Governance',
+    description: 'Track and control LLM costs in real-time with automatic budget enforcement across all providers.',
+    features: ['Real-time cost tracking', 'Budget limits per workflow', 'Provider cost aggregation', 'Cost alerts'],
   },
   {
-    title: '⏮️ Rollback & Recovery',
-    description: 'Automatic state snapshots before critical operations. Roll back to any previous state.',
+    icon: '📊',
+    title: 'Full Observability',
+    description: 'Distributed tracing, metrics, and structured logging give you complete visibility into agent behavior.',
+    features: ['OpenTelemetry integration', 'Custom dashboards', 'Log aggregation', 'Performance metrics'],
   },
   {
-    title: '📈 Full Observability',
-    description: 'Distributed tracing, metrics, and structured logging for every workflow execution.',
+    icon: '⏮️',
+    title: 'Rollback & Recovery',
+    description: 'Automatic state snapshots before critical operations allow you to roll back to any previous state.',
+    features: ['Automatic snapshots', 'Point-in-time recovery', 'State versioning', 'Rollback triggers'],
   },
   {
-    title: '🔧 Policy Engine',
-    description: 'Define complex policies for approval routing, cost limits, and execution controls.',
+    icon: '🔧',
+    title: 'Policy Engine',
+    description: 'Define complex governance policies for approval routing, cost limits, and execution controls.',
+    features: ['Declarative policy syntax', 'Conditional rules', 'Policy templates', 'Compliance presets'],
   },
 ];
+
+// Use cases
+const useCases = [
+  {
+    title: 'AI Copilots',
+    description: 'Build AI assistants that can take actions on behalf of users with proper safety controls.',
+    icon: '🤖',
+  },
+  {
+    title: 'Workflow Automation',
+    description: 'Automate complex business processes with AI agents that require human oversight.',
+    icon: '⚙️',
+  },
+  {
+    title: 'Data Processing',
+    description: 'Process and analyze large datasets with AI agents while controlling costs and resources.',
+    icon: '📊',
+  },
+  {
+    title: 'Code Generation',
+    description: 'Generate and execute code safely in isolated environments with rollback capabilities.',
+    icon: '💻',
+  },
+];
+
+function ValuePropsSection() {
+  return (
+    <section className={styles.section}>
+      <div className="container">
+        <div className={styles.gridFour}>
+          {valueProps.map((prop, idx) => (
+            <div key={idx} className={styles.valuePropCard}>
+              <div className={styles.valuePropIcon}>{prop.icon}</div>
+              <h3 className={styles.valuePropTitle}>{prop.title}</h3>
+              <p className={styles.valuePropDescription}>{prop.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CapabilitiesSection() {
+  return (
+    <section className={clsx(styles.section, styles.sectionAlt)}>
+      <div className="container">
+        <h2 className={styles.sectionTitle}>Core Capabilities</h2>
+        <p className={styles.sectionSubtitle}>
+          Everything you need to build, deploy, and manage AI agents in production environments.
+        </p>
+        <div className={styles.gridThree}>
+          {capabilities.map((capability, idx) => (
+            <div key={idx} className={styles.capabilityCard}>
+              <div className={styles.capabilityIcon}>{capability.icon}</div>
+              <h3 className={styles.capabilityTitle}>{capability.title}</h3>
+              <p className={styles.capabilityDescription}>{capability.description}</p>
+              <ul className={styles.featureList}>
+                {capability.features.map((feature, fIdx) => (
+                  <li key={fIdx}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuickStartSection() {
+  return (
+    <section className={styles.section}>
+      <div className="container">
+        <h2 className={styles.sectionTitle}>Get Started in Minutes</h2>
+        <p className={styles.sectionSubtitle}>
+          Install Wflo and start building secure AI agents with just a few commands.
+        </p>
+        <div className={styles.quickStartGrid}>
+          <div className={styles.codeBlock}>
+            <pre>
+              <code>{`# Install Wflo
+pip install wflo
+
+# Create a new workflow
+wflo init my-agent-workflow
+
+# Run with safety controls
+wflo run --budget 10.00 \\
+  --require-approval \\
+  --sandbox-mode strict`}</code>
+            </pre>
+          </div>
+          <div className={styles.quickStartFeatures}>
+            <h3>What you get:</h3>
+            <ul>
+              <li>✅ Sandboxed execution environment</li>
+              <li>✅ Cost tracking and budget limits</li>
+              <li>✅ Human approval workflows</li>
+              <li>✅ Complete observability</li>
+              <li>✅ Rollback capabilities</li>
+              <li>✅ Policy enforcement</li>
+            </ul>
+            <Link
+              className="button button--primary button--lg"
+              to="/docs/getting-started"
+              style={{ marginTop: '1.5rem' }}>
+              Read Full Documentation →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function UseCasesSection() {
+  return (
+    <section className={clsx(styles.section, styles.sectionAlt)}>
+      <div className="container">
+        <h2 className={styles.sectionTitle}>Use Cases</h2>
+        <p className={styles.sectionSubtitle}>
+          Build secure AI agents for any use case that requires safety, governance, and control.
+        </p>
+        <div className={styles.gridFour}>
+          {useCases.map((useCase, idx) => (
+            <div key={idx} className={styles.useCaseCard}>
+              <div className={styles.useCaseIcon}>{useCase.icon}</div>
+              <h3 className={styles.useCaseTitle}>{useCase.title}</h3>
+              <p className={styles.useCaseDescription}>{useCase.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatsSection() {
+  return (
+    <section className={styles.section}>
+      <div className="container">
+        <div className={styles.statsContainer}>
+          <div className={styles.stat}>
+            <div className={styles.statNumber}>100%</div>
+            <div className={styles.statLabel}>Open Source</div>
+          </div>
+          <div className={styles.stat}>
+            <div className={styles.statNumber}>Apache 2.0</div>
+            <div className={styles.statLabel}>Licensed</div>
+          </div>
+          <div className={styles.stat}>
+            <div className={styles.statNumber}>Python</div>
+            <div className={styles.statLabel}>Built With</div>
+          </div>
+        </div>
+        <div className={styles.finalCta}>
+          <h2>Ready to build secure AI agents?</h2>
+          <p>Join developers building production-ready AI workflows with safety controls.</p>
+          <div className={styles.buttons}>
+            <Link
+              className="button button--primary button--lg"
+              to="/docs/getting-started">
+              Get Started
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              to="https://github.com/wflo-ai/wflo">
+              Star on GitHub
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title} - ${siteConfig.tagline}`}
-      description="The secure runtime for AI agents. Production-ready infrastructure for running AI agents safely.">
+      title={`${siteConfig.title} - The secure runtime for AI agents`}
+      description="Production-ready infrastructure for running AI agents safely with sandboxed execution, human approval gates, cost governance, and full observability.">
       <HomepageHeader />
       <main>
-        {/* Problems Section */}
-        <section className={styles.section}>
-          <div className="container">
-            <h2 className={styles.sectionTitle}>The Problem</h2>
-            <div className={styles.grid}>
-              {problems.map((problem, idx) => (
-                <div key={idx} className={styles.card}>
-                  <div className={styles.cardIcon}>{problem.icon}</div>
-                  <h3 className={styles.cardTitle}>{problem.title}</h3>
-                  <p className={styles.cardDescription}>{problem.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className={clsx(styles.section, styles.sectionAlt)}>
-          <div className="container">
-            <h2 className={styles.sectionTitle}>Core Features</h2>
-            <div className={styles.grid}>
-              {features.map((feature, idx) => (
-                <div key={idx} className={styles.card}>
-                  <h3 className={styles.cardTitle}>{feature.title}</h3>
-                  <p className={styles.cardDescription}>{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Quick Start Section */}
-        <section className={styles.section}>
-          <div className="container">
-            <h2 className={styles.sectionTitle}>Quick Start</h2>
-            <div className={styles.codeBlock}>
-              <pre>
-                <code>{`# Install
-pip install wflo
-
-# Create workflow
-wflo init my-agent-workflow
-
-# Run with safety controls
-wflo run --budget 10.00 --require-approval`}</code>
-              </pre>
-            </div>
-            <div className={styles.centerButton}>
-              <Link
-                className="button button--primary button--lg"
-                to="/docs/getting-started">
-                Read Full Documentation →
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Status Banner */}
-        <section className={styles.section}>
-          <div className="container">
-            <div className={styles.statusBanner}>
-              <span className={styles.statusIcon}>⚠</span>
-              <span className={styles.statusText}>Early Development - Not production ready yet</span>
-            </div>
-            <p className={styles.statusSubtext}>
-              We're actively building in public. Star the repo to follow our progress!
-            </p>
-          </div>
-        </section>
+        <ValuePropsSection />
+        <CapabilitiesSection />
+        <QuickStartSection />
+        <UseCasesSection />
+        <StatsSection />
       </main>
     </Layout>
   );
