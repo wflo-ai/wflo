@@ -36,6 +36,30 @@ class Settings(BaseSettings):
         default=False,
         description="Enable debug mode",
     )
+    log_json_output: bool = Field(
+        default=False,
+        description="Use JSON logging format (for production)",
+    )
+
+    # Observability
+    opentelemetry_enabled: bool = Field(
+        default=False,
+        description="Enable OpenTelemetry tracing",
+    )
+    opentelemetry_otlp_endpoint: str | None = Field(
+        default=None,
+        description="OTLP gRPC endpoint (e.g., localhost:4317)",
+    )
+    metrics_enabled: bool = Field(
+        default=True,
+        description="Enable Prometheus metrics",
+    )
+    metrics_port: int = Field(
+        default=8000,
+        ge=1024,
+        le=65535,
+        description="Port for metrics HTTP server",
+    )
 
     # Database (PostgreSQL)
     database_url: PostgresDsn = Field(
