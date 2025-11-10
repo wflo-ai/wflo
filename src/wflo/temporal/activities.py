@@ -304,28 +304,59 @@ async def track_cost(
 async def execute_code_in_sandbox(
     code: str,
     timeout_seconds: int = 30,
+    allow_network: bool = False,
 ) -> dict[str, Any]:
     """Execute code in a sandboxed environment.
 
     Args:
         code: Python code to execute
         timeout_seconds: Maximum execution time
+        allow_network: Whether to allow network access
 
     Returns:
-        dict: Execution result with stdout, stderr, exit_code
+        dict: Execution result with stdout, stderr, exit_code, duration, sandbox_id
     """
+    from wflo.sandbox import SandboxRuntime
+
     activity.logger.info(
         f"Executing code in sandbox (timeout: {timeout_seconds}s)",
     )
 
-    # TODO: Implement actual sandbox execution with aiodocker
-    # For now, return a placeholder result
-    return {
-        "stdout": f"# Code execution placeholder\n# Code:\n{code[:100]}...",
-        "stderr": "",
-        "exit_code": 0,
-        "sandbox_id": "sandbox-placeholder",
-    }
+    try:
+        async with SandboxRuntime() as runtime:
+            result = await runtime.execute_code(
+                code=code,
+                timeout_seconds=timeout_seconds,
+                allow_network=allow_network,
+            )
+
+            return {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "exit_code": result.exit_code,
+                "sandbox_id": result.sandbox_id,
+                "duration_seconds": result.duration_seconds,
+                "started_at": result.started_at.isoformat(),
+                "completed_at": result.completed_at.isoformat(),
+            }
+    except TimeoutError as e:
+        activity.logger.error(f"Sandbox execution timed out: {e}")
+        return {
+            "stdout": "",
+            "stderr": f"Execution timed out after {timeout_seconds} seconds",
+            "exit_code": 124,  # Standard timeout exit code
+            "sandbox_id": "timeout",
+            "duration_seconds": float(timeout_seconds),
+        }
+    except Exception as e:
+        activity.logger.error(f"Sandbox execution failed: {e}", exc_info=e)
+        return {
+            "stdout": "",
+            "stderr": f"Sandbox error: {str(e)}",
+            "exit_code": 1,
+            "sandbox_id": "error",
+            "duration_seconds": 0.0,
+        }
 
 
 @activity.defn

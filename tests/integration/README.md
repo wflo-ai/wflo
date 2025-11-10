@@ -98,6 +98,7 @@ Integration tests are organized by component:
 
 - `test_database.py` - Database engine, ORM models, CRUD operations (15 tests)
 - `test_temporal.py` - Temporal workflows and activities (10+ tests)
+- `test_sandbox.py` - Sandboxed code execution with Docker (30+ tests)
 - `test_kafka.py` - Kafka producers and consumers (TODO)
 - `test_redis.py` - Redis caching and locks (TODO)
 
@@ -131,6 +132,30 @@ pytest tests/integration/test_temporal.py -v
 # Skip slow Temporal tests
 pytest tests/integration/ -v -m "not slow"
 ```
+
+#### test_sandbox.py (30+ tests)
+Tests sandboxed code execution with Docker:
+- Basic code execution (Python)
+- Error handling (syntax, runtime, import errors)
+- Timeout enforcement
+- Resource limits (CPU, memory)
+- Network isolation
+- Container cleanup
+- Security features (non-root user, filesystem isolation)
+- Edge cases (empty code, Unicode, large output)
+
+```bash
+# Run sandbox tests only
+pytest tests/integration/test_sandbox.py -v
+
+# Run specific test class
+pytest tests/integration/test_sandbox.py::TestSandboxBasicExecution -v
+
+# Skip slow sandbox tests
+pytest tests/integration/test_sandbox.py -v -m "not slow"
+```
+
+**Note:** Sandbox tests require Docker daemon to be running and accessible.
 
 ## Debugging Integration Tests
 
