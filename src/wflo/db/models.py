@@ -12,6 +12,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Float,
+    ForeignKey,
     Index,
     Integer,
     String,
@@ -86,7 +87,7 @@ class WorkflowExecutionModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     workflow_id: Mapped[str] = mapped_column(
-        String(36), nullable=False, index=True
+        String(36), ForeignKey("workflow_definitions.id"), nullable=False, index=True
     )
 
     # Status tracking
@@ -169,7 +170,7 @@ class StepExecutionModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     execution_id: Mapped[str] = mapped_column(
-        String(36), nullable=False, index=True
+        String(36), ForeignKey("workflow_executions.id"), nullable=False, index=True
     )
     step_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
 
@@ -234,7 +235,7 @@ class StateSnapshotModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     execution_id: Mapped[str] = mapped_column(
-        String(36), nullable=False, index=True
+        String(36), ForeignKey("workflow_executions.id"), nullable=False, index=True
     )
     step_id: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -276,7 +277,7 @@ class ApprovalRequestModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     execution_id: Mapped[str] = mapped_column(
-        String(36), nullable=False, index=True
+        String(36), ForeignKey("workflow_executions.id"), nullable=False, index=True
     )
     step_id: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -330,7 +331,7 @@ class RollbackActionModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     execution_id: Mapped[str] = mapped_column(
-        String(36), nullable=False, index=True
+        String(36), ForeignKey("workflow_executions.id"), nullable=False, index=True
     )
     snapshot_id: Mapped[str] = mapped_column(String(36), nullable=False)
 
