@@ -2,10 +2,10 @@
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
-from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 
 from wflo.config.settings import Settings
-from wflo.db.engine import DatabaseEngine, get_engine, init_db
+from wflo.db.engine import DatabaseEngine, get_engine, get_session, init_db
 
 
 class TestDatabaseEngine:
@@ -41,13 +41,13 @@ class TestDatabaseEngine:
         assert engine1 is engine2
 
     def test_engine_uses_queue_pool_in_production(self):
-        """Test engine uses QueuePool in non-testing environments."""
+        """Test engine uses AsyncAdaptedQueuePool in non-testing environments."""
         settings = Settings(app_env="production")
         engine = DatabaseEngine(settings)
 
         async_engine = engine.get_engine()
 
-        assert isinstance(async_engine.pool, QueuePool)
+        assert isinstance(async_engine.pool, AsyncAdaptedQueuePool)
 
     def test_engine_uses_null_pool_in_testing(self):
         """Test engine uses NullPool in testing environment."""
@@ -135,6 +135,8 @@ class TestDatabaseEngine:
     @pytest.mark.asyncio
     async def test_close_disposes_engine(self):
         """Test close() disposes the engine."""
+        from unittest.mock import AsyncMock, patch
+
         settings = Settings(app_env="testing")
         engine = DatabaseEngine(settings)
 
@@ -142,12 +144,12 @@ class TestDatabaseEngine:
         _ = engine.get_engine()
         assert engine._engine is not None
 
-        # Mock dispose to avoid actual database cleanup
-        from unittest.mock import AsyncMock
+        # Mock the dispose method using patch
+        with patch.object(engine._engine, 'dispose', new_callable=AsyncMock) as mock_dispose:
+            await engine.close()
 
-        engine._engine.dispose = AsyncMock()
-
-        await engine.close()
+            # Verify dispose was called
+            mock_dispose.assert_called_once()
 
         assert engine._engine is None
         assert engine._session_maker is None

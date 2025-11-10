@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 
 from wflo.config.settings import Settings
 
@@ -48,7 +48,7 @@ class DatabaseEngine:
         if self._engine is None:
             # Determine pool class based on environment
             pool_class = (
-                NullPool if self.settings.app_env == "testing" else QueuePool
+                NullPool if self.settings.app_env == "testing" else AsyncAdaptedQueuePool
             )
 
             # Build engine kwargs
@@ -57,8 +57,8 @@ class DatabaseEngine:
                 "poolclass": pool_class,
             }
 
-            # Only add pool configuration for QueuePool (not NullPool)
-            if pool_class == QueuePool:
+            # Only add pool configuration for AsyncAdaptedQueuePool (not NullPool)
+            if pool_class == AsyncAdaptedQueuePool:
                 engine_kwargs.update({
                     "pool_size": self.settings.database_pool_size,
                     "max_overflow": self.settings.database_max_overflow,
