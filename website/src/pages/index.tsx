@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -22,7 +22,13 @@ import {
   Database,
   Code2,
   Copy,
-  Check
+  Check,
+  Play,
+  Pause,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Activity
 } from 'lucide-react';
 import styles from './index.module.css';
 
@@ -34,6 +40,93 @@ function AnimatedGradient() {
       <div className={styles.gradientOrb2}></div>
       <div className={styles.gradientOrb3}></div>
     </div>
+  );
+}
+
+// Interactive workflow visualization
+function WorkflowVisualization() {
+  const [activeStep, setActiveStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const steps = [
+    { icon: Play, label: 'Request', color: 'var(--accent-cyan)', description: 'Agent receives task' },
+    { icon: AlertCircle, label: 'Approval', color: 'var(--accent-violet)', description: 'Human review required' },
+    { icon: Lock, label: 'Sandbox', color: 'var(--accent-neon-green)', description: 'Isolated execution' },
+    { icon: Activity, label: 'Execute', color: 'var(--accent-electric-blue)', description: 'Running workflow' },
+    { icon: CheckCircle, label: 'Complete', color: 'var(--accent-emerald)', description: 'Task completed' },
+  ];
+
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % steps.length);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isPlaying, steps.length]);
+
+  return (
+    <motion.div
+      className={styles.workflowVisualization}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.6 }}
+    >
+      <div className={styles.workflowHeader}>
+        <h3>Agent Lifecycle</h3>
+        <button
+          className={styles.workflowControl}
+          onClick={() => setIsPlaying(!isPlaying)}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+        </button>
+      </div>
+      <div className={styles.workflowSteps}>
+        {steps.map((step, idx) => {
+          const StepIcon = step.icon;
+          const isActive = idx === activeStep;
+          const isPast = idx < activeStep;
+
+          return (
+            <React.Fragment key={idx}>
+              <motion.div
+                className={clsx(styles.workflowStep, {
+                  [styles.workflowStepActive]: isActive,
+                  [styles.workflowStepPast]: isPast,
+                })}
+                onClick={() => setActiveStep(idx)}
+                animate={{
+                  scale: isActive ? 1.1 : 1,
+                  opacity: isActive ? 1 : isPast ? 0.6 : 0.4,
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className={styles.workflowStepIcon} style={{ color: step.color }}>
+                  <StepIcon size={24} strokeWidth={2} />
+                </div>
+                <div className={styles.workflowStepLabel}>{step.label}</div>
+                <div className={styles.workflowStepDescription}>{step.description}</div>
+              </motion.div>
+              {idx < steps.length - 1 && (
+                <div className={styles.workflowConnector}>
+                  <motion.div
+                    className={styles.workflowConnectorLine}
+                    initial={{ scaleX: 0 }}
+                    animate={{
+                      scaleX: idx < activeStep ? 1 : 0,
+                      backgroundColor: idx < activeStep ? step.color : 'var(--ifm-hr-border-color)',
+                    }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }
 
@@ -125,6 +218,7 @@ function HomepageHeader() {
             <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
           </a>
         </motion.div>
+        <WorkflowVisualization />
       </div>
     </header>
   );
