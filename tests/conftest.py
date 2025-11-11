@@ -115,6 +115,24 @@ async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
 # Redis fixtures
 
 
+@pytest.fixture(autouse=True)
+async def reset_redis_pool() -> AsyncGenerator[None, None]:
+    """Reset Redis connection pool before each test.
+
+    This ensures each test gets a fresh Redis pool in the correct event loop,
+    preventing "Event loop is closed" errors when using DistributedLock.
+    """
+    from wflo.cache.redis import close_redis_pool
+
+    # Close pool before test (if it exists from previous test)
+    await close_redis_pool()
+
+    yield
+
+    # Clean up after test
+    await close_redis_pool()
+
+
 @pytest.fixture
 async def redis_client() -> AsyncGenerator[Redis, None]:
     """Create a Redis client for testing.
