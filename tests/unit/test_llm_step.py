@@ -134,9 +134,10 @@ class TestLLMStep:
             # Mock CostTracker
             mock_cost = 0.002
 
-            with patch("wflo.workflow.steps.llm.AsyncOpenAI") as mock_openai:
+            # Mock imports inside execute() since they're lazy loaded
+            with patch("openai.AsyncOpenAI") as mock_openai:
                 with patch(
-                    "wflo.workflow.steps.llm.CostTracker"
+                    "wflo.cost.tracker.CostTracker"
                 ) as mock_cost_tracker:
                     # Setup mocks
                     mock_client = AsyncMock()
@@ -191,8 +192,8 @@ class TestLLMStep:
             mock_response.usage.completion_tokens = 10
             mock_response.usage.total_tokens = 30
 
-            with patch("wflo.workflow.steps.llm.AsyncOpenAI") as mock_openai:
-                with patch("wflo.workflow.steps.llm.CostTracker") as mock_cost_tracker:
+            with patch("openai.AsyncOpenAI") as mock_openai:
+                with patch("wflo.cost.tracker.CostTracker") as mock_cost_tracker:
                     mock_client = AsyncMock()
                     mock_client.chat.completions.create = AsyncMock(
                         return_value=mock_response
@@ -254,7 +255,7 @@ class TestLLMStep:
     async def test_execute_api_error(self):
         """Test execution handles API errors gracefully."""
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}):
-            with patch("wflo.workflow.steps.llm.AsyncOpenAI") as mock_openai:
+            with patch("openai.AsyncOpenAI") as mock_openai:
                 mock_client = AsyncMock()
                 mock_client.chat.completions.create = AsyncMock(
                     side_effect=Exception("API rate limit exceeded")
