@@ -238,13 +238,21 @@ poetry run pytest tests/integration/test_database.py -v   # Database tests
 poetry run pytest --cov=wflo --cov-report=html
 ```
 
-See [TESTING.md](TESTING.md) for detailed testing guide.
+## Documentation
+
+📚 **Comprehensive documentation is available in the `docs/` directory**:
+
+- **[Project Assessment](docs/PROJECT_ASSESSMENT.md)** - Overall project status, metrics, and recommendations
+- **[Infrastructure Setup](docs/INFRASTRUCTURE.md)** - Complete guide for all 7 services
+- **[Test Fixes](docs/INTEGRATION_TEST_FIX_SUMMARY.md)** - Integration test fixes and patterns
+- **[Session Handover](docs/HANDOVER.md)** - Current work and next steps
+- **[Phase Documentation](docs/phases/)** - Detailed docs for all 6 development phases
 
 ## Current Implementation Status
 
 ### ✅ Completed (Phases 1-4)
 
-**Phase 1: Cost Tracking**
+**[Phase 1: Cost Tracking](docs/phases/PHASE_1_COST_TRACKING.md)**
 - ✅ Automatic cost calculation for 400+ LLM models (tokencost library)
 - ✅ Database persistence for cost history
 - ✅ Budget enforcement and alerts
@@ -271,13 +279,13 @@ See [TESTING.md](TESTING.md) for detailed testing guide.
 
 ### 🚧 In Progress
 
-**Phase 5: Security Hardening** (Planned)
+**[Phase 5: Security Hardening](docs/phases/PHASE_5_SECURITY_PLAN.md)** (Not Started)
 - Container image scanning
 - gVisor runtime evaluation
 - Security audit logging
 - Penetration testing
 
-**Phase 6: Testing & Documentation** (Planned)
+**[Phase 6: Testing & Documentation](docs/phases/PHASE_6_TESTING.md)** (60% Complete)
 - Increase integration test coverage
 - Performance benchmarks
 - API documentation
