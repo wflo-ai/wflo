@@ -18,6 +18,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
+# Load environment variables from .env file if it exists (for consistency)
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / ".env"
+    load_dotenv(env_path)
+except ImportError:
+    pass  # python-dotenv not installed, will use system env vars
+
 try:
     import click
 except ImportError:

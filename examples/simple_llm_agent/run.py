@@ -22,6 +22,15 @@ from pathlib import Path
 # Add src to path for imports (before other imports)
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
+# Load environment variables from .env file if it exists
+try:
+    from dotenv import load_dotenv
+    # Look for .env in the example directory
+    env_path = Path(__file__).parent / ".env"
+    load_dotenv(env_path)
+except ImportError:
+    pass  # python-dotenv not installed, will use system env vars
+
 # Check for required packages
 try:
     import click
