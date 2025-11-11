@@ -298,7 +298,7 @@ class TestKafkaConsumer:
         assert total_consumed >= 2, f"Expected at least 2 messages consumed, got {total_consumed}"
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 class TestEventSchemas:
     """Test event schema validation."""
 
