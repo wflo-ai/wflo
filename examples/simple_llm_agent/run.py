@@ -13,18 +13,33 @@ Requirements:
 """
 
 import asyncio
+import logging
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
-import click
-
-# Add src to path for imports
+# Add src to path for imports (before other imports)
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from wflo.workflow.steps import LLMStep, StepContext
-from wflo.observability.logging import setup_logging
+# Check for required packages
+try:
+    import click
+except ImportError:
+    print("ERROR: Required package 'click' not installed")
+    print("\nInstall dependencies with:")
+    print("  poetry install")
+    print("\nOr install click manually:")
+    print("  pip install click")
+    sys.exit(1)
+
+try:
+    from wflo.workflow.steps import LLMStep, StepContext
+except ImportError as e:
+    print(f"ERROR: Failed to import Wflo components: {e}")
+    print("\nMake sure you're running from the project root directory")
+    print("and have installed dependencies with: poetry install")
+    sys.exit(1)
 
 
 def print_header():
@@ -192,9 +207,12 @@ async def async_main(
 ) -> int:
     """Async main function."""
 
-    # Setup logging
-    log_level = "DEBUG" if verbose else "INFO"
-    setup_logging(log_level=log_level)
+    # Setup simple logging
+    log_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     # Print header
     print_header()
