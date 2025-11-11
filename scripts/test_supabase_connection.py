@@ -39,14 +39,17 @@ async def test_connection():
     if "@" in db_url:
         parts = db_url.split("@")
         host_part = parts[1].split("/")[0]
+        database_part = parts[1].split("/")[-1] if "/" in parts[1] else "postgres"
         username = parts[0].split("//")[1].split(":")[0]
         safe_url = f"postgresql://{username}:****@{host_part}/..."
     else:
         safe_url = db_url
+        host_part = "unknown"
+        database_part = "unknown"
 
     print(f"\nConnection: {safe_url}")
-    print(f"Host: {settings.database_url.host}")
-    print(f"Database: {settings.database_url.path}")
+    print(f"Host: {host_part}")
+    print(f"Database: {database_part}")
     print()
 
     db = init_db(settings)
