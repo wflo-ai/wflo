@@ -1,26 +1,28 @@
-"""Integration tests for Supabase database.
+"""Integration tests for PostgreSQL database (Supabase or local).
 
-These tests verify that wflo works correctly with Supabase PostgreSQL.
-They can be run against a real Supabase instance.
+These tests verify that wflo works correctly with PostgreSQL.
+They can be run against Supabase, local PostgreSQL, or any PostgreSQL instance.
 
 Requirements:
-- Supabase project with database
-- DATABASE_URL or TEST_DATABASE_URL environment variable set
+- PostgreSQL database (Supabase, local, or remote)
+- DATABASE_URL or TEST_DATABASE_URL environment variable set in .env
 
 Setup:
-1. Create Supabase project at https://supabase.com
-2. Get database connection string from project settings
-3. Set environment variable:
-   export TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@db.xxxx.supabase.co:5432/postgres
-   OR
-   export DATABASE_URL=postgresql+asyncpg://postgres:password@db.xxxx.supabase.co:5432/postgres
-4. Run tests:
+1. Configure your database URL in .env file:
+   DATABASE_URL=postgresql+asyncpg://postgres:password@host:5432/dbname
+
+   Examples:
+   - Supabase: postgresql+asyncpg://postgres:pass@db.xxx.supabase.co:5432/postgres
+   - Local: postgresql+asyncpg://postgres:pass@localhost:5432/wflo
+   - Remote: postgresql+asyncpg://user:pass@your-host:5432/dbname
+
+2. Run tests:
    poetry run pytest tests/integration/test_supabase.py -v -m integration
 
 Note:
-- If your password contains special characters like @, URL-encode them (%40 for @)
-- These tests will create and delete data in your Supabase database
-- Recommended to use a dedicated test project
+- Tests use the database URL from .env file (DATABASE_URL or TEST_DATABASE_URL)
+- These tests will create and delete data in your database
+- Recommended to use a dedicated test database
 """
 
 import os
@@ -37,18 +39,6 @@ from wflo.db.models import (
     StateSnapshotModel,
     WorkflowDefinitionModel,
     WorkflowExecutionModel,
-)
-
-
-def _is_supabase_url(url: str) -> bool:
-    """Check if URL is a Supabase connection string."""
-    return "supabase.co" in url.lower() if url else False
-
-
-pytestmark = pytest.mark.skipif(
-    not _is_supabase_url(os.environ.get("TEST_DATABASE_URL", ""))
-    and not _is_supabase_url(os.environ.get("DATABASE_URL", "")),
-    reason="Supabase integration tests require Supabase DATABASE_URL or TEST_DATABASE_URL",
 )
 
 
