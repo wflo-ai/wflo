@@ -12,11 +12,15 @@ Setup:
 2. Get database connection string from project settings
 3. Set environment variable:
    export TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@db.xxxx.supabase.co:5432/postgres
+   OR
+   export DATABASE_URL=postgresql+asyncpg://postgres:password@db.xxxx.supabase.co:5432/postgres
 4. Run tests:
    poetry run pytest tests/integration/test_supabase.py -v -m integration
 
-Note: These tests will create and delete data in your Supabase database.
-Recommended to use a dedicated test project.
+Note:
+- If your password contains special characters like @, URL-encode them (%40 for @)
+- These tests will create and delete data in your Supabase database
+- Recommended to use a dedicated test project
 """
 
 import os
@@ -36,10 +40,15 @@ from wflo.db.models import (
 )
 
 
+def _is_supabase_url(url: str) -> bool:
+    """Check if URL is a Supabase connection string."""
+    return "supabase.co" in url.lower() if url else False
+
+
 pytestmark = pytest.mark.skipif(
-    not os.environ.get("TEST_DATABASE_URL", "").endswith(".supabase.co:5432/postgres")
-    and not os.environ.get("DATABASE_URL", "").endswith(".supabase.co:5432/postgres"),
-    reason="Supabase integration tests require Supabase DATABASE_URL",
+    not _is_supabase_url(os.environ.get("TEST_DATABASE_URL", ""))
+    and not _is_supabase_url(os.environ.get("DATABASE_URL", "")),
+    reason="Supabase integration tests require Supabase DATABASE_URL or TEST_DATABASE_URL",
 )
 
 
