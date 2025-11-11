@@ -7,6 +7,8 @@ import pytest
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from sqlalchemy.exc import PendingRollbackError
+
 from wflo.cache.redis import get_redis_client
 from wflo.config.settings import Settings
 from wflo.db.engine import DatabaseEngine
@@ -96,9 +98,13 @@ async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
     async with session_maker() as session:
         try:
             yield session
-            # Only commit if session is in a valid state (no prior rollback)
-            if session.in_transaction():
+            # Try to commit, but ignore if session was already rolled back
+            try:
                 await session.commit()
+            except PendingRollbackError:
+                # Session was rolled back due to an error (e.g., constraint violation)
+                # This is expected for tests that validate error handling
+                pass
         except Exception:
             await session.rollback()
             raise
