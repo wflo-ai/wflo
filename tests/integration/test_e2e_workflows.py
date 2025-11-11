@@ -4,17 +4,17 @@ These tests verify that wflo works correctly with real LLM providers
 and actual database operations (PostgreSQL or Supabase).
 
 Requirements:
-- DATABASE_URL or TEST_DATABASE_URL set
-- OPENAI_API_KEY environment variable set (for OpenAI tests)
-- ANTHROPIC_API_KEY environment variable set (for Anthropic tests)
+- DATABASE_URL or TEST_DATABASE_URL set in .env
+- OPENAI_API_KEY set in .env (for OpenAI tests)
+- ANTHROPIC_API_KEY set in .env (for Anthropic tests)
 
 Setup:
-1. Set up database (local PostgreSQL or Supabase):
-   export TEST_DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/db
-2. Set API keys:
-   export OPENAI_API_KEY=sk-...
-   export ANTHROPIC_API_KEY=sk-ant-...
-3. Run tests:
+1. Configure .env file with:
+   DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/db
+   OPENAI_API_KEY=sk-...
+   ANTHROPIC_API_KEY=sk-ant-...
+
+2. Run tests:
    poetry run pytest tests/integration/test_e2e_workflows.py -v -m integration
 
 WARNING: These tests will make real API calls and incur costs (typically < $0.10 total).
@@ -32,15 +32,18 @@ from wflo.sdk.decorators.track_llm import track_llm_call
 from wflo.sdk.workflow import BudgetExceededError, WfloWorkflow
 
 
+# Load settings to check for API keys (loads from .env automatically)
+_settings = get_settings()
+
 # Skip tests if API keys not available
 skip_if_no_openai = pytest.mark.skipif(
-    not os.environ.get("OPENAI_API_KEY"),
-    reason="OPENAI_API_KEY environment variable not set",
+    not _settings.openai_api_key,
+    reason="OPENAI_API_KEY not set in .env file",
 )
 
 skip_if_no_anthropic = pytest.mark.skipif(
-    not os.environ.get("ANTHROPIC_API_KEY"),
-    reason="ANTHROPIC_API_KEY environment variable not set",
+    not _settings.anthropic_api_key,
+    reason="ANTHROPIC_API_KEY not set in .env file",
 )
 
 
