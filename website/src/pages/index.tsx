@@ -142,7 +142,7 @@ function HomepageHeader() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         >
-          Engineer reliable AI agents
+          The secure runtime for AI agents
         </motion.h1>
         <motion.div
           className={styles.heroTagline}
