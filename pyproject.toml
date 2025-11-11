@@ -42,6 +42,10 @@ python-dotenv = "^1.0.0"
 # Cost tracking
 tokencost = "^0.1.26"
 tiktoken = "^0.9.0"
+# LLM APIs
+openai = "^1.3.0"
+# CLI
+click = "^8.1.0"
 # Observability
 opentelemetry-api = "^1.21.0"
 opentelemetry-sdk = "^1.21.0"
