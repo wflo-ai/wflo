@@ -204,7 +204,7 @@ class TestCostTracker:
         cost2 = tracker.calculate_cost(usage2)
         expected_total = cost1 + cost2
 
-        assert abs(updated_execution.cost_total_usd - expected_total) < 0.0001
+        assert abs(updated_execution.cost_total_usd - float(expected_total)) < 0.0001
 
 
 @pytest.mark.asyncio
