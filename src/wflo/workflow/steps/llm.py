@@ -18,18 +18,33 @@ class LLMStep(Step):
     """Step that calls an LLM API (OpenAI, Anthropic, etc.).
 
     Supports:
-    - OpenAI (GPT-4, GPT-3.5-turbo, etc.)
+    - OpenAI models: GPT-5, GPT-4, GPT-3.5-turbo, o1, o3 series
     - Automatic cost tracking using tokencost library
     - Token counting for prompt and completion
     - Error handling and proper logging
     - Template-based prompt rendering
+    - Model-specific parameter handling (max_completion_tokens, temperature)
+
+    Model Compatibility:
+        - GPT-5/o-series: Uses max_completion_tokens, temperature=1.0 only
+        - GPT-4/GPT-3.5: Uses max_tokens, temperature 0-2 supported
 
     Example:
+        # GPT-5 model (uses max_completion_tokens, no temperature customization)
         step = LLMStep(
             step_id="summarize",
-            model="gpt-4",
+            model="gpt-5-mini",
             prompt_template="Summarize this text: {input_text}",
             max_tokens=200
+        )
+
+        # GPT-4 model (uses max_tokens, temperature customizable)
+        step = LLMStep(
+            step_id="creative",
+            model="gpt-4",
+            prompt_template="Write a story about {topic}",
+            max_tokens=500,
+            temperature=0.9  # Supported for GPT-4
         )
 
         context = StepContext(
@@ -59,11 +74,14 @@ class LLMStep(Step):
 
         Args:
             step_id: Unique step identifier
-            model: Model name (e.g., "gpt-4", "gpt-3.5-turbo")
+            model: Model name (e.g., "gpt-5-mini", "gpt-4", "gpt-3.5-turbo")
             prompt_template: Template with {variables} for rendering
             system_prompt: Optional system message to set context
-            max_tokens: Maximum completion tokens
+            max_tokens: Maximum completion tokens (name used for both max_tokens
+                       and max_completion_tokens depending on model)
             temperature: Sampling temperature (0-2, default 0.7)
+                        Note: GPT-5 and o-series models only support temperature=1.0
+                        Custom values will be ignored with a warning
             **kwargs: Additional config passed to parent
         """
         super().__init__(step_id, **kwargs)
@@ -121,29 +139,48 @@ class LLMStep(Step):
                 messages.append({"role": "system", "content": self.system_prompt})
             messages.append({"role": "user", "content": prompt})
 
-            # Determine which token parameter to use based on model
-            # GPT-5 and o-series models require max_completion_tokens
-            # Older models (GPT-4, GPT-3.5, etc.) use max_tokens
-            uses_completion_tokens = (
+            # Determine API parameter compatibility based on model
+            # GPT-5 and o-series models have different requirements:
+            #   - Use max_completion_tokens instead of max_tokens
+            #   - Temperature must be omitted or set to 1 (default)
+            # Older models (GPT-4, GPT-3.5, etc.):
+            #   - Use max_tokens
+            #   - Temperature range 0-2 is supported
+            is_reasoning_model = (
                 self.model.startswith("gpt-5")
                 or self.model.startswith("o1")
                 or self.model.startswith("o3")
             )
 
-            # Build API parameters
+            # Build API parameters with model-appropriate settings
             api_params = {
                 "model": self.model,
                 "messages": messages,
-                "temperature": self.temperature,
             }
 
-            # Add the appropriate token limit parameter
-            if uses_completion_tokens:
+            # Add token limit parameter (model-specific)
+            if is_reasoning_model:
                 api_params["max_completion_tokens"] = self.max_tokens
+                # Temperature for GPT-5/o-series: only default (1) is supported
+                # Only include if explicitly set to 1, otherwise omit
+                if self.temperature == 1.0:
+                    api_params["temperature"] = 1.0
+                # If user set a different value, log warning and omit parameter
+                elif self.temperature != 0.7:  # 0.7 is our default
+                    logger.warning(
+                        f"Temperature {self.temperature} not supported for {self.model}. "
+                        f"Using model default (1.0). "
+                        f"GPT-5 and o-series models only support temperature=1.0"
+                    )
             else:
+                # Legacy models support max_tokens and full temperature range
                 api_params["max_tokens"] = self.max_tokens
+                api_params["temperature"] = self.temperature
 
             # Call OpenAI API
+            logger.debug(
+                f"Calling OpenAI API with parameters: {list(api_params.keys())}"
+            )
             response = await client.chat.completions.create(**api_params)
 
             # Extract response data
