@@ -28,18 +28,18 @@ class TestRedisClient:
         is_healthy = await check_redis_health()
         assert is_healthy is True, "Redis should be healthy"
 
-    async def test_redis_set_get(self):
+    async def test_redis_set_get(self, redis_client):
         """Test basic Redis set/get operations."""
-        async with get_redis_client() as redis:
-            # Set a key
-            await redis.set("test_key", "test_value", ex=60)
+        redis = redis_client
+        # Set a key
+        await redis.set("test_key", "test_value", ex=60)
 
-            # Get the key
-            value = await redis.get("test_key")
-            assert value == "test_value"
+        # Get the key
+        value = await redis.get("test_key")
+        assert value == "test_value"
 
-            # Delete the key
-            await redis.delete("test_key")
+        # Delete the key
+        await redis.delete("test_key")
 
     async def test_redis_expiration(self):
         """Test key expiration."""
@@ -75,18 +75,17 @@ class TestDistributedLock:
         released = await lock.release()
         assert released is True
 
-    async def test_lock_context_manager(self):
+    async def test_lock_context_manager(self, redis_client):
         """Test lock using context manager."""
+        redis = redis_client
         async with distributed_lock("test_lock_cm", timeout=60):
             # Inside critical section
-            async with get_redis_client() as redis:
-                exists = await redis.exists("lock:test_lock_cm")
-                assert exists == 1, "Lock should exist"
+            exists = await redis.exists("lock:test_lock_cm")
+            assert exists == 1, "Lock should exist"
 
         # After context exit, lock should be released
-        async with get_redis_client() as redis:
-            exists = await redis.exists("lock:test_lock_cm")
-            assert exists == 0, "Lock should be released"
+        exists = await redis.exists("lock:test_lock_cm")
+        assert exists == 0, "Lock should be released"
 
     async def test_lock_prevents_concurrent_access(self):
         """Test that lock prevents concurrent access."""
@@ -152,8 +151,9 @@ class TestDistributedLock:
         # Clean up
         await lock.release()
 
-    async def test_lock_auto_renewal(self):
+    async def test_lock_auto_renewal(self, redis_client):
         """Test automatic lock renewal for long operations."""
+        redis = redis_client
         lock = DistributedLock(
             "auto_renewal_lock",
             timeout=2,
@@ -166,9 +166,8 @@ class TestDistributedLock:
             await asyncio.sleep(3)
 
             # Lock should still be held due to auto-renewal
-            async with get_redis_client() as redis:
-                exists = await redis.exists("lock:auto_renewal_lock")
-                assert exists == 1, "Lock should still exist due to auto-renewal"
+            exists = await redis.exists("lock:auto_renewal_lock")
+            assert exists == 1, "Lock should still exist due to auto-renewal"
 
     async def test_lock_with_wait(self):
         """Test lock acquisition with wait."""
@@ -193,8 +192,9 @@ class TestDistributedLock:
         # Clean up
         await lock2.release()
 
-    async def test_lock_context_manager_exception(self):
+    async def test_lock_context_manager_exception(self, redis_client):
         """Test that lock is released even on exception."""
+        redis = redis_client
         try:
             async with distributed_lock("exception_lock", timeout=60):
                 # Simulate error
@@ -203,9 +203,8 @@ class TestDistributedLock:
             pass
 
         # Lock should be released
-        async with get_redis_client() as redis:
-            exists = await redis.exists("lock:exception_lock")
-            assert exists == 0, "Lock should be released after exception"
+        exists = await redis.exists("lock:exception_lock")
+        assert exists == 0, "Lock should be released after exception"
 
     async def test_lock_acquisition_error(self):
         """Test LockAcquisitionError when lock cannot be acquired."""

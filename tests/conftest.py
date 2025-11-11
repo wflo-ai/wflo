@@ -4,8 +4,12 @@ import os
 from collections.abc import AsyncGenerator
 
 import pytest
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from sqlalchemy.exc import PendingRollbackError
+
+from wflo.cache.redis import get_redis_client
 from wflo.config.settings import Settings
 from wflo.db.engine import DatabaseEngine
 from wflo.db.models import Base
@@ -94,9 +98,47 @@ async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
     async with session_maker() as session:
         try:
             yield session
-            await session.commit()
+            # Try to commit, but ignore if session was already rolled back
+            try:
+                await session.commit()
+            except PendingRollbackError:
+                # Session was rolled back due to an error (e.g., constraint violation)
+                # This is expected for tests that validate error handling
+                pass
         except Exception:
             await session.rollback()
             raise
         finally:
             await session.close()
+
+
+# Redis fixtures
+
+
+@pytest.fixture(autouse=True)
+async def reset_redis_pool() -> AsyncGenerator[None, None]:
+    """Reset Redis connection pool before each test.
+
+    This ensures each test gets a fresh Redis pool in the correct event loop,
+    preventing "Event loop is closed" errors when using DistributedLock.
+    """
+    from wflo.cache.redis import close_redis_pool
+
+    # Close pool before test (if it exists from previous test)
+    await close_redis_pool()
+
+    yield
+
+    # Clean up after test
+    await close_redis_pool()
+
+
+@pytest.fixture
+async def redis_client() -> AsyncGenerator[Redis, None]:
+    """Create a Redis client for testing.
+
+    This creates a new Redis connection for each test in the correct event loop,
+    preventing "Event loop is closed" errors.
+    """
+    async with get_redis_client() as client:
+        yield client

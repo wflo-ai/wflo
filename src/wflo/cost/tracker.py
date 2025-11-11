@@ -148,7 +148,7 @@ class CostTracker:
         )
         execution = result.scalar_one()
 
-        execution.cost_total_usd += cost
+        execution.cost_total_usd += float(cost)
         execution.cost_prompt_tokens += usage.prompt_tokens
         execution.cost_completion_tokens += usage.completion_tokens
 
@@ -163,7 +163,7 @@ class CostTracker:
             )
             step_execution = result.scalar_one()
 
-            step_execution.cost_usd += cost
+            step_execution.cost_usd += float(cost)
             step_execution.prompt_tokens += usage.prompt_tokens
             step_execution.completion_tokens += usage.completion_tokens
 

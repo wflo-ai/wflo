@@ -4,7 +4,7 @@ import asyncio
 import json
 from typing import Any, AsyncIterator
 
-from confluent_kafka import Consumer, KafkaError, KafkaException, Message
+from confluent_kafka import Consumer, KafkaError, KafkaException, Message, TopicPartition
 from pydantic import BaseModel, ValidationError
 
 from wflo.config import get_settings
@@ -111,7 +111,7 @@ class KafkaConsumer:
             "max.poll.interval.ms": 300000,
             # Fetch config
             "fetch.min.bytes": 1024,
-            "fetch.max.wait.ms": 500,
+            "fetch.wait.max.ms": 500,
         }
 
         self.consumer: Consumer | None = None
@@ -217,10 +217,8 @@ class KafkaConsumer:
                 ).inc()
 
                 # Update lag metric (high watermark - current offset)
-                _, high_watermark = self.consumer.get_watermark_offsets(
-                    msg.topic(),
-                    msg.partition(),
-                )
+                tp = TopicPartition(msg.topic(), msg.partition())
+                _, high_watermark = self.consumer.get_watermark_offsets(tp)
                 lag = high_watermark - msg.offset() - 1
                 kafka_consumer_lag.labels(
                     topic=msg.topic(),
