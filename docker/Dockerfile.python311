@@ -1,0 +1,76 @@
+# Wflo Python 3.11 Sandbox Runtime
+# This image is used for executing untrusted Python code in isolated containers
+# with resource limits and security hardening.
+
+FROM python:3.11-slim
+
+LABEL maintainer="wflo-ai"
+LABEL description="Python 3.11 sandbox runtime for Wflo AI agent execution"
+LABEL version="0.1.0"
+
+# Security updates
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install common Python packages for AI/ML workloads
+# Keep image size reasonable by only installing essentials
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        openai==1.3.0 \
+        anthropic==0.7.0 \
+        requests==2.31.0 \
+        aiohttp==3.9.0 \
+        pydantic==2.5.0 \
+        python-dotenv==1.0.0
+
+# Create non-root user for security
+# UID 1000 is standard for first user
+RUN useradd -m -u 1000 -s /bin/bash sandbox && \
+    mkdir -p /sandbox /sandbox/workspace && \
+    chown -R sandbox:sandbox /sandbox
+
+# Set working directory
+WORKDIR /sandbox/workspace
+
+# Switch to non-root user
+USER sandbox
+
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+# Wflo Sandbox Entrypoint\n\
+# Executes Python code passed via stdin or file\n\
+\n\
+if [ -f "/sandbox/workspace/code.py" ]; then\n\
+    python /sandbox/workspace/code.py\n\
+else\n\
+    python -c "${WFLO_CODE:-print(\"No code provided\")}"\n\
+fi\n\
+' > /sandbox/entrypoint.sh && \
+    chmod +x /sandbox/entrypoint.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "print('healthy')" || exit 1
+
+# Default command runs Python interactively
+CMD ["python", "-c", "print('Wflo Python 3.11 Sandbox Ready')"]
+
+# Metadata
+ENV WFLO_RUNTIME_VERSION="0.1.0" \
+    WFLO_RUNTIME_LANGUAGE="python" \
+    WFLO_RUNTIME_VERSION_DETAIL="3.11" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Security notes:
+# - Runs as non-root user (UID 1000)
+# - No sudo or privileged operations
+# - Minimal package installation
+# - Regular security updates applied
+# - Works with Docker resource limits (CPU, memory, network)
+# - Compatible with seccomp profiles and AppArmor
+# - Future: Will be tested with gVisor for enhanced isolation
