@@ -30,6 +30,28 @@ from wflo.temporal.workflows import (
 )
 
 
+# Test workflow for activity testing (must be at module level for Temporal)
+@workflow.defn
+class TestActivityWorkflow:
+    """Test workflow that calls save_workflow_execution activity."""
+
+    @workflow.run
+    async def run(self, execution_id: str, workflow_id: str) -> str:
+        """Run the save_workflow_execution activity."""
+        return await workflow.execute_activity(
+            save_workflow_execution,
+            args=[
+                execution_id,
+                workflow_id,
+                "RUNNING",
+                "test-trace-id",
+                "test-correlation-id",
+                {},
+            ],
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+
 @pytest.mark.asyncio
 @pytest.mark.integration
 @pytest.mark.slow
@@ -273,27 +295,6 @@ class TestTemporalActivities:
         )
         db_session.add(workflow_def)
         await db_session.commit()
-
-        # Define a test workflow that calls the activity
-        @workflow.defn
-        class TestActivityWorkflow:
-            """Test workflow that calls save_workflow_execution."""
-
-            @workflow.run
-            async def run(self, execution_id: str, workflow_id: str) -> str:
-                """Run the activity."""
-                return await workflow.execute_activity(
-                    save_workflow_execution,
-                    args=[
-                        execution_id,
-                        workflow_id,
-                        "RUNNING",
-                        "test-trace-id",
-                        "test-correlation-id",
-                        {},
-                    ],
-                    start_to_close_timeout=timedelta(seconds=10),
-                )
 
         async with await WorkflowEnvironment.start_time_skipping() as env:
             async with Worker(
