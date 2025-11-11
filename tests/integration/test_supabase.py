@@ -63,6 +63,8 @@ class TestSupabaseConnection:
 
     async def test_connection_pool_info(self, db_session: AsyncSession):
         """Test connection pool is working."""
+        from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
+
         # Access the engine through the session
         engine = db_session.bind
 
@@ -70,10 +72,19 @@ class TestSupabaseConnection:
         pool = engine.pool
         assert pool is not None
 
-        # Pool should have some configuration
-        print(f"\nConnection pool size: {pool.size()}")
-        print(f"Checked out connections: {pool.checkedout()}")
-        print(f"Pool overflow: {pool.overflow()}")
+        # Pool type and configuration depends on environment
+        pool_type = type(pool).__name__
+        print(f"\nConnection pool type: {pool_type}")
+
+        # NullPool is used in testing, AsyncAdaptedQueuePool in production
+        if isinstance(pool, AsyncAdaptedQueuePool):
+            print(f"Pool size: {pool.size()}")
+            print(f"Checked out connections: {pool.checkedout()}")
+            print(f"Pool overflow: {pool.overflow()}")
+        elif isinstance(pool, NullPool):
+            print("NullPool: No connection pooling (test mode)")
+        else:
+            print(f"Unknown pool type: {pool_type}")
 
     async def test_tables_exist_in_supabase(self, db_session: AsyncSession):
         """Test all wflo tables exist in Supabase."""
