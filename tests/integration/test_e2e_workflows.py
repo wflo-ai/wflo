@@ -89,7 +89,8 @@ class TestOpenAIWorkflows:
         """Test simple workflow with OpenAI API call."""
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI()
+        settings = get_settings()
+        client = AsyncOpenAI(api_key=settings.openai_api_key)
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def simple_chat(prompt: str):
@@ -137,7 +138,8 @@ class TestOpenAIWorkflows:
         """Test multi-step workflow with checkpoints and OpenAI."""
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI()
+        settings = get_settings()
+        client = AsyncOpenAI(api_key=settings.openai_api_key)
 
         @track_llm_call(model="gpt-3.5-turbo")
         @checkpoint(name="generate_topic")
@@ -206,7 +208,8 @@ class TestOpenAIWorkflows:
         """Test that budget enforcement works with real API calls."""
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI()
+        settings = get_settings()
+        client = AsyncOpenAI(api_key=settings.openai_api_key)
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def expensive_chat(prompt: str):
@@ -251,7 +254,8 @@ class TestAnthropicWorkflows:
         """Test simple workflow with Anthropic Claude."""
         from anthropic import AsyncAnthropic
 
-        client = AsyncAnthropic()
+        settings = get_settings()
+        client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
         @track_llm_call(model="claude-3-haiku-20240307")
         async def simple_claude_chat(prompt: str):
@@ -302,7 +306,8 @@ class TestDatabasePersistence:
         from wflo.db.engine import get_session
         from wflo.db.models import WorkflowExecutionModel
 
-        client = AsyncOpenAI()
+        settings = get_settings()
+        client = AsyncOpenAI(api_key=settings.openai_api_key)
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def simple_chat(prompt: str):
@@ -358,7 +363,8 @@ class TestDatabasePersistence:
         from wflo.db.engine import get_session
         from wflo.db.models import StateSnapshotModel
 
-        client = AsyncOpenAI()
+        settings = get_settings()
+        client = AsyncOpenAI(api_key=settings.openai_api_key)
 
         @track_llm_call(model="gpt-3.5-turbo")
         @checkpoint(name="test_checkpoint")
@@ -419,7 +425,8 @@ class TestCostTracking:
         """Test that cost tracking matches actual usage."""
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI()
+        settings = get_settings()
+        client = AsyncOpenAI(api_key=settings.openai_api_key)
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def tracked_chat(prompt: str):
