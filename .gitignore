@@ -3,6 +3,14 @@
 # Planning documents (internal use only)
 plan/
 
+# Strategic documents (moved to wflo-internal private repo)
+docs/SESSION_SUMMARY.md
+docs/COMPREHENSIVE_ASSESSMENT.md
+docs/IMPLEMENTATION_PLAN.md
+docs/*-internal.md
+docs/strategy/
+docs/planning/
+
 # Python
 __pycache__/
 *.py[cod]
