@@ -6,7 +6,10 @@ from wflo.sdk.workflow import WfloWorkflow, BudgetExceededError
 
 
 def mock_get_session_generator(mock_session=None):
-    """Create a mock async generator for get_session."""
+    """Create a mock async generator for get_session.
+
+    Returns an async generator that yields the mock session.
+    """
     if mock_session is None:
         mock_session = Mock()
         # Add async methods that are commonly used
@@ -52,10 +55,8 @@ class TestWfloWorkflow:
         mock_session = Mock()
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=5.0)):
-            # Mock async generator
-            async def mock_gen():
-                yield mock_session
-            mock_get_session.return_value = mock_gen()
+            # Mock async generator - use side_effect to create new generator each call
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
 
             # Should not raise
             await workflow.check_budget()
@@ -68,10 +69,8 @@ class TestWfloWorkflow:
         mock_session = Mock()
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=15.0)):
-            # Mock async generator
-            async def mock_gen():
-                yield mock_session
-            mock_get_session.return_value = mock_gen()
+            # Mock async generator - use side_effect to create new generator each call
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
 
             with pytest.raises(BudgetExceededError) as exc_info:
                 await workflow.check_budget()
@@ -95,10 +94,8 @@ class TestWfloWorkflow:
         mock_session = Mock()
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=7.5)):
-            # Mock async generator
-            async def mock_gen():
-                yield mock_session
-            mock_get_session.return_value = mock_gen()
+            # Mock async generator - use side_effect to create new generator each call
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
 
             breakdown = await workflow.get_cost_breakdown()
 
@@ -115,10 +112,8 @@ class TestWfloWorkflow:
         mock_session = Mock()
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=12.0)):
-            # Mock async generator
-            async def mock_gen():
-                yield mock_session
-            mock_get_session.return_value = mock_gen()
+            # Mock async generator - use side_effect to create new generator each call
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
 
             breakdown = await workflow.get_cost_breakdown()
 
@@ -212,11 +207,13 @@ class TestWfloWorkflow:
         """Test execute generates unique execution ID."""
         workflow = WfloWorkflow(name="test", budget_usd=10.0)
 
-        # Mock workflow execution
-        mock_workflow = AsyncMock(return_value="result")
+        # Mock workflow execution - use spec to prevent arbitrary attributes
+        mock_workflow = AsyncMock(return_value="result", spec=['__call__'])
 
-        with patch("wflo.sdk.workflow.get_session"), \
-             patch("wflo.sdk.workflow.WorkflowExecutionModel"):
+        with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
+             patch("wflo.sdk.workflow.WorkflowExecutionModel"), \
+             patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=0.0)):
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
             await workflow.execute(mock_workflow, {"input": "data"})
 
             # Verify execution ID generated
@@ -227,13 +224,13 @@ class TestWfloWorkflow:
         """Test execute works with generic callable."""
         workflow = WfloWorkflow(name="test", budget_usd=100.0)
 
-        # Create mock callable workflow
-        mock_callable = AsyncMock(return_value={"status": "success"})
+        # Create mock callable workflow - use spec to prevent arbitrary attributes
+        mock_callable = AsyncMock(return_value={"status": "success"}, spec=['__call__'])
 
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch("wflo.sdk.workflow.WorkflowExecutionModel"), \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=5.0)):
-            mock_get_session.return_value = mock_get_session_generator()
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
             result = await workflow.execute(mock_callable, {"input": "test"})
 
             # Verify callable was called with inputs
@@ -244,32 +241,32 @@ class TestWfloWorkflow:
         """Test execute detects and handles LangGraph workflow."""
         workflow = WfloWorkflow(name="test", budget_usd=100.0)
 
-        # Create mock LangGraph workflow (has __ainvoke__)
+        # Create mock LangGraph workflow (has ainvoke)
         mock_langgraph = Mock()
-        mock_langgraph.__ainvoke__ = AsyncMock(return_value={"final": "state"})
+        mock_langgraph.ainvoke = AsyncMock(return_value={"final": "state"})
 
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch("wflo.sdk.workflow.WorkflowExecutionModel"), \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=5.0)):
-            mock_get_session.return_value = mock_get_session_generator()
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
             result = await workflow.execute(mock_langgraph, {"initial": "state"})
 
             # Verify ainvoke was called
-            mock_langgraph.__ainvoke__.assert_called_once_with({"initial": "state"})
+            mock_langgraph.ainvoke.assert_called_once_with({"initial": "state"})
             assert result == {"final": "state"}
 
     async def test_execute_crewai_crew(self):
         """Test execute detects and handles CrewAI crew."""
         workflow = WfloWorkflow(name="test", budget_usd=100.0)
 
-        # Create mock CrewAI crew (has kickoff)
-        mock_crew = Mock()
+        # Create mock CrewAI crew (has kickoff) - use spec to prevent ainvoke attribute
+        mock_crew = Mock(spec=['kickoff'])
         mock_crew.kickoff = Mock(return_value="crew result")
 
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch("wflo.sdk.workflow.WorkflowExecutionModel"), \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=5.0)):
-            mock_get_session.return_value = mock_get_session_generator()
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
             result = await workflow.execute(mock_crew, {})
 
             # Verify kickoff was called
@@ -280,12 +277,13 @@ class TestWfloWorkflow:
         """Test execute raises BudgetExceededError when budget exceeded."""
         workflow = WfloWorkflow(name="test", budget_usd=5.0)
 
-        mock_workflow = AsyncMock(return_value="result")
+        # Use spec=[] to prevent mock from having arbitrary attributes
+        mock_workflow = AsyncMock(return_value="result", spec=['__call__'])
 
         with patch("wflo.sdk.workflow.get_session") as mock_get_session, \
              patch("wflo.sdk.workflow.WorkflowExecutionModel"), \
              patch.object(workflow.cost_tracker, "get_total_cost", new=AsyncMock(return_value=10.0)):
-            mock_get_session.return_value = mock_get_session_generator()
+            mock_get_session.side_effect = lambda: mock_get_session_generator()
             with pytest.raises(BudgetExceededError):
                 await workflow.execute(mock_workflow, {})
 

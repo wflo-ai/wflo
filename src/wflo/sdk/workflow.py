@@ -149,7 +149,7 @@ class WfloWorkflow:
         await self.check_budget()
 
         # LangGraph workflow
-        if hasattr(workflow, "__ainvoke__"):
+        if hasattr(workflow, "ainvoke"):
             return await self._execute_langgraph(workflow, inputs)
 
         # CrewAI crew
