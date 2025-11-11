@@ -308,8 +308,7 @@ class TestTemporalActivities:
 
                 result = await env.client.execute_workflow(
                     TestActivityWorkflow.run,
-                    execution_id,
-                    workflow_def.id,
+                    args=[execution_id, workflow_def.id],
                     id=f"test-activity-{uuid4()}",
                     task_queue="test-queue",
                 )
