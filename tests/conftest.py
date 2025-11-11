@@ -96,7 +96,9 @@ async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, Non
     async with session_maker() as session:
         try:
             yield session
-            await session.commit()
+            # Only commit if session is in a valid state (no prior rollback)
+            if session.in_transaction():
+                await session.commit()
         except Exception:
             await session.rollback()
             raise
