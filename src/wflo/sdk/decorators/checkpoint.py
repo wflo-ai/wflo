@@ -87,8 +87,61 @@ def checkpoint(name: Optional[str] = None):
     if callable(name):
         # Called as @checkpoint without parentheses
         func = name
-        checkpoint_name = func.__name__
-        return decorator(func)
+        name_param = None  # Reset name to None so decorator uses func.__name__
+
+        # Create a new decorator with name=None
+        def actual_decorator(f: Callable) -> Callable:
+            actual_checkpoint_name = f.__name__
+
+            @wraps(f)
+            async def wrapper(*args: Any, **kwargs: Any) -> Any:
+                from wflo.sdk.context import get_current_execution_id
+                from wflo.services.checkpoint import get_checkpoint_service
+
+                execution_id = get_current_execution_id()
+                start_time = time.time()
+
+                try:
+                    # Execute function
+                    result = await f(*args, **kwargs)
+
+                    # Extract state to save
+                    state_to_save = _extract_state(result, args, kwargs)
+
+                    # Save checkpoint
+                    checkpoint_service = get_checkpoint_service()
+                    await checkpoint_service.save(
+                        execution_id=execution_id,
+                        checkpoint_name=actual_checkpoint_name,
+                        state=state_to_save,
+                    )
+
+                    duration_ms = (time.time() - start_time) * 1000
+
+                    logger.info(
+                        "checkpoint_saved",
+                        execution_id=execution_id,
+                        checkpoint_name=actual_checkpoint_name,
+                        duration_ms=round(duration_ms, 2),
+                    )
+
+                    return result
+
+                except Exception as e:
+                    logger.error(
+                        "checkpoint_failed",
+                        execution_id=execution_id,
+                        checkpoint_name=actual_checkpoint_name,
+                        error=str(e),
+                        error_type=type(e).__name__,
+                    )
+                    # Don't fail execution if checkpoint fails
+                    # Re-raise original exception
+                    raise
+
+            return wrapper
+
+        return actual_decorator(func)
 
     return decorator
 

@@ -36,11 +36,13 @@ class TestExtractUsage:
 
     def test_extract_usage_anthropic_format(self):
         """Test extracting usage from Anthropic Claude response format."""
-        # Mock Anthropic response
-        response = Mock()
-        response.usage = Mock()
-        response.usage.input_tokens = 100
-        response.usage.output_tokens = 50
+        # Mock Anthropic response - use spec to limit attributes
+        usage_mock = Mock(spec=['input_tokens', 'output_tokens'])
+        usage_mock.input_tokens = 100
+        usage_mock.output_tokens = 50
+
+        response = Mock(spec=['usage'])
+        response.usage = usage_mock
 
         result = _extract_usage(response, "claude-3-5-sonnet-20241022")
 
@@ -87,7 +89,7 @@ class TestExtractUsage:
 
     def test_extract_usage_no_usage_field(self):
         """Test extracting usage when no usage field exists."""
-        response = Mock()
+        response = Mock(spec=[])  # Empty spec - no attributes
 
         result = _extract_usage(response, "gpt-4")
 

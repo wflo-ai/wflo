@@ -7,7 +7,7 @@ import structlog
 from wflo.sdk.context import ExecutionContext
 from wflo.cost import CostTracker
 from wflo.services.checkpoint import get_checkpoint_service
-from wflo.db.engine import get_async_session
+from wflo.db.engine import get_session
 from wflo.db.models import WorkflowExecutionModel
 
 logger = structlog.get_logger()
@@ -216,22 +216,23 @@ class WfloWorkflow:
             return
 
         # Get total cost so far
-        total_cost = await self.cost_tracker.get_total_cost(self.execution_id)
+        async for session in get_session():
+            total_cost = await self.cost_tracker.get_total_cost(session, self.execution_id)
 
-        if total_cost > self.budget_usd:
-            raise BudgetExceededError(
-                f"Budget exceeded: ${total_cost:.4f} > ${self.budget_usd:.2f}",
+            if total_cost > self.budget_usd:
+                raise BudgetExceededError(
+                    f"Budget exceeded: ${total_cost:.4f} > ${self.budget_usd:.2f}",
+                    spent_usd=total_cost,
+                    budget_usd=self.budget_usd,
+                )
+
+            logger.debug(
+                "budget_check",
+                execution_id=self.execution_id,
                 spent_usd=total_cost,
                 budget_usd=self.budget_usd,
+                remaining_usd=self.budget_usd - total_cost,
             )
-
-        logger.debug(
-            "budget_check",
-            execution_id=self.execution_id,
-            spent_usd=total_cost,
-            budget_usd=self.budget_usd,
-            remaining_usd=self.budget_usd - total_cost,
-        )
 
     async def checkpoint(self, name: str, state: Dict[str, Any]) -> None:
         """
@@ -301,18 +302,19 @@ class WfloWorkflow:
         if not self.execution_id:
             return {}
 
-        total_cost = await self.cost_tracker.get_total_cost(self.execution_id)
+        async for session in get_session():
+            total_cost = await self.cost_tracker.get_total_cost(session, self.execution_id)
 
-        return {
-            "total_usd": total_cost,
-            "budget_usd": self.budget_usd,
-            "remaining_usd": max(0, self.budget_usd - total_cost),
+            return {
+                "total_usd": total_cost,
+                "budget_usd": self.budget_usd,
+                "remaining_usd": max(0, self.budget_usd - total_cost),
             "exceeded": total_cost > self.budget_usd,
         }
 
     async def _create_execution_record(self, inputs: Dict[str, Any]) -> None:
         """Create execution record in database."""
-        async with get_async_session() as session:
+        async for session in get_session():
             execution = WorkflowExecutionModel(
                 id=self.execution_id,
                 workflow_definition_id=self.name,  # For now, use name as definition ID
@@ -325,7 +327,7 @@ class WfloWorkflow:
 
     async def _mark_completed(self, result: Any) -> None:
         """Mark execution as completed."""
-        async with get_async_session() as session:
+        async for session in get_session():
             result = await session.get(WorkflowExecutionModel, self.execution_id)
             if result:
                 result.status = "COMPLETED"
@@ -334,7 +336,7 @@ class WfloWorkflow:
 
     async def _mark_failed(self, error: str) -> None:
         """Mark execution as failed."""
-        async with get_async_session() as session:
+        async for session in get_session():
             execution = await session.get(WorkflowExecutionModel, self.execution_id)
             if execution:
                 execution.status = "FAILED"

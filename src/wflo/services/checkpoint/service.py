@@ -4,7 +4,7 @@ import uuid
 from typing import Optional
 import structlog
 
-from wflo.db.engine import get_async_session
+from wflo.db.engine import get_session
 from wflo.db.models import StateSnapshotModel
 from sqlalchemy import select, desc
 
@@ -34,7 +34,7 @@ class CheckpointService:
         Returns:
             Checkpoint ID
         """
-        async with get_async_session() as session:
+        async for session in get_session():
             # Get current version number (max version + 1)
             result = await session.execute(
                 select(StateSnapshotModel.version)
@@ -81,7 +81,7 @@ class CheckpointService:
         Returns:
             State dictionary or None if not found
         """
-        async with get_async_session() as session:
+        async for session in get_session():
             if checkpoint_name:
                 # Load specific checkpoint by name
                 result = await session.execute(
@@ -125,7 +125,7 @@ class CheckpointService:
         Returns:
             List of checkpoint metadata dicts
         """
-        async with get_async_session() as session:
+        async for session in get_session():
             result = await session.execute(
                 select(StateSnapshotModel)
                 .where(StateSnapshotModel.execution_id == execution_id)
@@ -156,7 +156,7 @@ class CheckpointService:
         Returns:
             Restored state or None if checkpoint not found
         """
-        async with get_async_session() as session:
+        async for session in get_session():
             # Find the checkpoint to rollback to
             result = await session.execute(
                 select(StateSnapshotModel)

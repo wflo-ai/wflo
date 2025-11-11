@@ -78,7 +78,7 @@ class TestCheckpointDecorator:
     async def test_checkpoint_saves_state_after_execution(self):
         """Test checkpoint decorator saves state after function execution."""
         with patch(
-            "wflo.sdk.decorators.checkpoint.get_checkpoint_service"
+            "wflo.services.checkpoint.get_checkpoint_service"
         ) as mock_get_service:
             # Setup mock checkpoint service
             mock_service = Mock()
@@ -110,7 +110,7 @@ class TestCheckpointDecorator:
     async def test_checkpoint_with_custom_name(self):
         """Test checkpoint decorator with custom name."""
         with patch(
-            "wflo.sdk.decorators.checkpoint.get_checkpoint_service"
+            "wflo.services.checkpoint.get_checkpoint_service"
         ) as mock_get_service:
             mock_service = Mock()
             mock_service.save = AsyncMock()
@@ -131,7 +131,7 @@ class TestCheckpointDecorator:
     async def test_checkpoint_handles_errors_gracefully(self):
         """Test checkpoint decorator doesn't fail execution on checkpoint error."""
         with patch(
-            "wflo.sdk.decorators.checkpoint.get_checkpoint_service"
+            "wflo.services.checkpoint.get_checkpoint_service"
         ) as mock_get_service, patch(
             "wflo.sdk.decorators.checkpoint.logger"
         ) as mock_logger:
@@ -166,7 +166,7 @@ class TestCheckpointDecorator:
     async def test_checkpoint_without_parentheses(self):
         """Test checkpoint decorator can be used without parentheses."""
         with patch(
-            "wflo.sdk.decorators.checkpoint.get_checkpoint_service"
+            "wflo.services.checkpoint.get_checkpoint_service"
         ) as mock_get_service:
             mock_service = Mock()
             mock_service.save = AsyncMock()
@@ -215,7 +215,7 @@ class TestCheckpointAfterAgent:
 
         # Wrap task
         with patch(
-            "wflo.sdk.decorators.checkpoint.get_checkpoint_service"
+            "wflo.services.checkpoint.get_checkpoint_service"
         ) as mock_get_service:
             mock_service = Mock()
             mock_service.save = AsyncMock()
