@@ -125,7 +125,7 @@ def print_footer():
     click.echo()
     click.echo("💡 " + click.style("Next Steps:", bold=True))
     click.echo("   - Try different prompts")
-    click.echo("   - Experiment with different models (--model gpt-3.5-turbo)")
+    click.echo("   - Experiment with different models (--model gpt-5 or gpt-4)")
     click.echo("   - Test budget limits (--budget 0.01)")
     click.echo("   - Check the example README for more information")
     click.echo()
@@ -135,8 +135,8 @@ def print_footer():
 @click.option("--prompt", required=True, help="Question for the LLM")
 @click.option(
     "--model",
-    default="gpt-4",
-    help="Model to use (gpt-4, gpt-3.5-turbo, etc.)",
+    default=lambda: os.getenv("OPENAI_MODEL", "gpt-5-mini"),
+    help="Model to use (gpt-5-mini, gpt-5, gpt-4, etc.)",
     show_default=True,
 )
 @click.option(
@@ -193,7 +193,7 @@ def main(
         python run.py --prompt "Explain quantum computing" --budget 0.50
 
         # Different model
-        python run.py --prompt "Write a haiku" --model gpt-3.5-turbo
+        python run.py --prompt "Write a haiku" --model gpt-5
 
         # Custom system prompt
         python run.py --prompt "Hello" --system-prompt "You are a pirate"

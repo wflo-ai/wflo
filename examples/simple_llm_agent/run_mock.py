@@ -10,6 +10,7 @@ Usage:
 
 import asyncio
 import logging
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -127,7 +128,7 @@ def create_mock_response(prompt: str, model: str):
 @click.option("--prompt", required=True, help="Question for the LLM")
 @click.option(
     "--model",
-    default="gpt-4",
+    default=lambda: os.getenv("OPENAI_MODEL", "gpt-5-mini"),
     help="Model to use (mocked)",
     show_default=True,
 )
