@@ -136,12 +136,15 @@ class LLMStep(Step):
             total_tokens = response.usage.total_tokens
 
             # Calculate cost using CostTracker
+            from wflo.cost.tracker import TokenUsage
+
             cost_tracker = CostTracker()
-            cost = cost_tracker.calculate_cost(
+            usage = TokenUsage(
                 model=self.model,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
             )
+            cost = cost_tracker.calculate_cost(usage)
 
             completed_at = datetime.now()
             duration = (completed_at - started_at).total_seconds()
