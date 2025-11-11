@@ -121,13 +121,30 @@ class LLMStep(Step):
                 messages.append({"role": "system", "content": self.system_prompt})
             messages.append({"role": "user", "content": prompt})
 
-            # Call OpenAI API
-            response = await client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                max_tokens=self.max_tokens,
-                temperature=self.temperature,
+            # Determine which token parameter to use based on model
+            # GPT-5 and o-series models require max_completion_tokens
+            # Older models (GPT-4, GPT-3.5, etc.) use max_tokens
+            uses_completion_tokens = (
+                self.model.startswith("gpt-5")
+                or self.model.startswith("o1")
+                or self.model.startswith("o3")
             )
+
+            # Build API parameters
+            api_params = {
+                "model": self.model,
+                "messages": messages,
+                "temperature": self.temperature,
+            }
+
+            # Add the appropriate token limit parameter
+            if uses_completion_tokens:
+                api_params["max_completion_tokens"] = self.max_tokens
+            else:
+                api_params["max_tokens"] = self.max_tokens
+
+            # Call OpenAI API
+            response = await client.chat.completions.create(**api_params)
 
             # Extract response data
             output_text = response.choices[0].message.content
