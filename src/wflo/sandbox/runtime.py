@@ -154,6 +154,7 @@ class SandboxRuntime:
         )
 
         started_at = datetime.now(timezone.utc)
+        container = None  # Initialize to avoid UnboundLocalError in finally block
 
         try:
             # Create and execute container
@@ -206,8 +207,8 @@ class SandboxRuntime:
             return result
 
         finally:
-            # Cleanup container
-            if container.id in self._containers:
+            # Cleanup container if it was created
+            if container is not None and container.id in self._containers:
                 await self._cleanup_container(container)
 
     async def _create_container(
