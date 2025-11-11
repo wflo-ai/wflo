@@ -184,12 +184,17 @@ docker compose up -d
 # Then run database migrations
 poetry run alembic upgrade head
 
-# 4. Verify setup
-./scripts/verify_setup.sh
+# 4. Create test database
+docker compose exec -T postgres psql -U wflo_user -d postgres -c "CREATE DATABASE wflo_test;"
+DATABASE_URL=postgresql://wflo_user:wflo_password@localhost:5432/wflo_test \
+  poetry run alembic upgrade head
 
-# 5. Run integration tests
-./scripts/run_tests.sh integration
+# 5. Run tests to verify
+poetry run pytest tests/unit/ -v
+poetry run pytest tests/integration/test_redis.py::TestRedisClient::test_redis_health_check -v
 ```
+
+**For detailed infrastructure setup, troubleshooting, and management, see [INFRASTRUCTURE.md](INFRASTRUCTURE.md).**
 
 ### Infrastructure Services
 
