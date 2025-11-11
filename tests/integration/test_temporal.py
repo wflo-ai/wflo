@@ -152,7 +152,7 @@ class TestWfloWorkflow:
             id=str(uuid4()),
             name="test-workflow",
             version=1,
-            steps=[],
+            steps={},
             policies={},
         )
         db_session.add(workflow_def)
@@ -200,7 +200,7 @@ class TestWfloWorkflow:
             id=str(uuid4()),
             name="budget-test-workflow",
             version=1,
-            steps=[],
+            steps={},
             policies={"max_cost_usd": 10.0},
         )
         db_session.add(workflow_def)
@@ -257,7 +257,7 @@ class TestTemporalActivities:
             id=str(uuid4()),
             name="activity-test-workflow",
             version=1,
-            steps=[],
+            steps={},
             policies={},
         )
         db_session.add(workflow_def)
