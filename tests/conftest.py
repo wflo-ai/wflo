@@ -34,13 +34,26 @@ def sample_execution_id() -> str:
 def test_db_url() -> str:
     """Get test database URL from environment or use default.
 
-    Set TEST_DATABASE_URL environment variable to override.
-    Default: postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test
+    Checks in order:
+    1. TEST_DATABASE_URL from environment
+    2. DATABASE_URL from environment
+    3. DATABASE_URL from .env file (via get_settings())
+    4. Default: postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test
     """
-    return os.environ.get(
-        "TEST_DATABASE_URL",
-        "postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test",
-    )
+    # Try environment variables first
+    url = os.environ.get("TEST_DATABASE_URL") or os.environ.get("DATABASE_URL")
+
+    # If not in environment, try loading from .env via get_settings()
+    if not url:
+        try:
+            from wflo.config import get_settings
+            settings = get_settings()
+            url = str(settings.database_url)
+        except Exception:
+            # Fall back to default if settings can't be loaded
+            url = "postgresql+asyncpg://wflo_user:wflo_password@localhost:5432/wflo_test"
+
+    return url
 
 
 @pytest.fixture(scope="session")
