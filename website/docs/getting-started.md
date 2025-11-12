@@ -19,13 +19,13 @@ Get up and running with wflo in minutes. Build AI agent workflows with productio
 
 ### From PyPI (Coming Soon)
 
-\`\`\`bash
+```bash
 pip install wflo
-\`\`\`
+```
 
 ### From Source (Current)
 
-\`\`\`bash
+```bash
 # Clone the repository
 git clone https://github.com/wflo-ai/wflo.git
 cd wflo
@@ -35,7 +35,7 @@ poetry install
 
 # Or with pip
 pip install -e ".[dev]"
-\`\`\`
+```
 
 ## Database Setup
 
@@ -56,30 +56,30 @@ Supabase provides managed PostgreSQL with authentication and is ideal for produc
    - Format: \`postgresql://postgres:PASSWORD@db.xxx.supabase.co:5432/postgres\`
 
 3. **Configure Environment**
-   \`\`\`bash
+   ```bash
    # Copy environment template
    cp .env.example .env
 
    # Edit .env and set:
    DATABASE_URL=postgresql+asyncpg://postgres:YOUR-PASSWORD@db.xxxxxxxxxxxxxxxxxxxx.supabase.co:5432/postgres
-   \`\`\`
+   ```
 
 4. **Initialize Database**
-   \`\`\`bash
+   ```bash
    python scripts/init_db.py
-   \`\`\`
+   ```
 
 5. **Test Connection**
-   \`\`\`bash
+   ```bash
    python scripts/test_supabase_connection.py
-   \`\`\`
+   ```
 
-**See [Supabase Setup Guide](../../docs/SUPABASE_SETUP.md) for detailed instructions.**
+**See [Supabase Setup Guide](./supabase-setup.md) for detailed instructions.**
 
 ### Option 2: Local PostgreSQL
 
 1. **Install PostgreSQL**
-   \`\`\`bash
+   ```bash
    # macOS
    brew install postgresql
    brew services start postgresql
@@ -87,39 +87,39 @@ Supabase provides managed PostgreSQL with authentication and is ideal for produc
    # Ubuntu/Debian
    sudo apt-get install postgresql
    sudo systemctl start postgresql
-   \`\`\`
+   ```
 
 2. **Create Database**
-   \`\`\`bash
+   ```bash
    createdb wflo
-   \`\`\`
+   ```
 
 3. **Configure Environment**
-   \`\`\`bash
+   ```bash
    cp .env.example .env
 
    # Edit .env:
    DATABASE_URL=postgresql+asyncpg://localhost:5432/wflo
-   \`\`\`
+   ```
 
 4. **Initialize Database**
-   \`\`\`bash
+   ```bash
    python scripts/init_db.py
-   \`\`\`
+   ```
 
 ## Set Up API Keys
 
-\`\`\`bash
+```bash
 # Edit .env and add your API keys:
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
-\`\`\`
+```
 
 ## Your First Workflow
 
 Create \`examples/my_first_workflow.py\`:
 
-\`\`\`python
+```python
 import asyncio
 from openai import AsyncOpenAI
 from wflo.sdk.workflow import WfloWorkflow, BudgetExceededError
@@ -182,17 +182,17 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-\`\`\`
+```
 
 Run it:
 
-\`\`\`bash
+```bash
 export OPENAI_API_KEY=sk-...
 python examples/my_first_workflow.py
-\`\`\`
+```
 
 Expected output:
-\`\`\`
+```
 ✅ Workflow completed!
 Result: Hello Alice! Hope you're having a wonderful day!
 
@@ -202,13 +202,13 @@ Result: Hello Alice! Hope you're having a wonderful day!
   Remaining: \$0.0992
 
 🔍 Execution ID: exec-a1b2c3d4e5f6
-\`\`\`
+```
 
 ## Next Steps
 
 - **[Features](./features.md)** - Explore all Phase 1 features
 - **[Examples](./examples.md)** - See comprehensive examples
-- **[Supabase Setup](../../docs/SUPABASE_SETUP.md)** - Detailed Supabase guide
+- **[Supabase Setup](./supabase-setup.md)** - Detailed Supabase guide
 - **[Architecture](./architecture.md)** - Understand how wflo works
 
 ## Troubleshooting
@@ -218,34 +218,34 @@ Result: Hello Alice! Hope you're having a wonderful day!
 If you see connection errors:
 
 1. **Check DATABASE_URL format**
-   \`\`\`bash
+   ```bash
    # Should have +asyncpg driver
    postgresql+asyncpg://user:pass@host:5432/db
-   \`\`\`
+   ```
 
 2. **Verify database exists**
-   \`\`\`bash
+   ```bash
    python scripts/test_supabase_connection.py
-   \`\`\`
+   ```
 
 3. **Initialize database tables**
-   \`\`\`bash
+   ```bash
    python scripts/init_db.py
-   \`\`\`
+   ```
 
 ### API Key Issues
 
 If you see authentication errors:
 
 1. **Verify API keys are set**
-   \`\`\`bash
+   ```bash
    echo \$OPENAI_API_KEY
-   \`\`\`
+   ```
 
 2. **Check .env file**
-   \`\`\`bash
+   ```bash
    cat .env | grep API_KEY
-   \`\`\`
+   ```
 
 ### Budget Exceeded Errors
 
