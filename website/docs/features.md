@@ -274,7 +274,7 @@ print(f"Exceeded: {breakdown['exceeded']}")
 -- Execution record
 CREATE TABLE workflow_executions (
     id VARCHAR PRIMARY KEY,                -- exec-xxx
-    workflow_definition_id VARCHAR,        -- Workflow name
+    workflow_id VARCHAR,                   -- Workflow name
     status VARCHAR,                        -- RUNNING, COMPLETED, FAILED
     inputs JSONB,                          -- Input parameters
     outputs JSONB,                         -- Result
@@ -310,21 +310,21 @@ print(f"Budget exceeded: {breakdown['exceeded']}")
 # Query cost by execution
 # SELECT
 #     id,
-#     workflow_definition_id,
+#     workflow_id,
 #     cost_total_usd,
 #     created_at
 # FROM workflow_executions
-# WHERE workflow_definition_id = 'my-workflow'
+# WHERE workflow_id = 'my-workflow'
 # ORDER BY created_at DESC;
 
 # Aggregate cost by workflow
 # SELECT
-#     workflow_definition_id,
+#     workflow_id,
 #     COUNT(*) as executions,
 #     SUM(cost_total_usd) as total_cost,
 #     AVG(cost_total_usd) as avg_cost
 # FROM workflow_executions
-# GROUP BY workflow_definition_id;
+# GROUP BY workflow_id;
 ```
 
 ## Configuration Options

@@ -346,7 +346,7 @@ class TestDatabasePersistence:
             assert execution.id == execution_id
             assert execution.status == "COMPLETED"
             assert execution.cost_total_usd > 0
-            assert execution.workflow_definition_id == "e2e-persistence-test"
+            assert execution.workflow_id == "e2e-persistence-test"
 
             print(f"\n✅ Execution persisted to database!")
             print(f"   Execution ID: {execution.id}")

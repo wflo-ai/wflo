@@ -317,10 +317,10 @@ class WfloWorkflow:
         async for session in get_session():
             execution = WorkflowExecutionModel(
                 id=self.execution_id,
-                workflow_definition_id=self.name,  # For now, use name as definition ID
+                workflow_id=self.name,  # For now, use name as workflow ID
                 status="RUNNING",
                 inputs=inputs,
-                total_cost_usd=0.0,
+                cost_total_usd=0.0,
             )
             session.add(execution)
             await session.commit()

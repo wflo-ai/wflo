@@ -396,12 +396,12 @@ Query workflow execution costs:
 ```sql
 -- Total cost by workflow
 SELECT
-    workflow_definition_id,
+    workflow_id,
     COUNT(*) as executions,
     SUM(cost_total_usd) as total_cost,
     AVG(cost_total_usd) as avg_cost
 FROM workflow_executions
-GROUP BY workflow_definition_id
+GROUP BY workflow_id
 ORDER BY total_cost DESC;
 
 -- Recent executions
