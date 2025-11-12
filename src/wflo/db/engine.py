@@ -67,6 +67,16 @@ class DatabaseEngine:
                     "pool_pre_ping": True,  # Enable connection health checks
                 })
 
+            # Add asyncpg-specific connect_args for Supabase compatibility
+            # Disable prepared statements to work with PgBouncer pooling
+            engine_kwargs["connect_args"] = {
+                "prepared_statement_cache_size": 0,  # Disable prepared statements
+                "statement_cache_size": 0,  # Disable statement cache
+                "server_settings": {
+                    "jit": "off",  # Disable JIT compilation for compatibility
+                },
+            }
+
             self._engine = create_async_engine(
                 str(self.settings.database_url),
                 **engine_kwargs,

@@ -228,6 +228,32 @@ class CostTracker:
             # Fallback to GPT-4 tokenizer if model not supported
             return count_string_tokens(text, "gpt-4")
 
+    async def get_total_cost(self, session: AsyncSession, execution_id: str) -> float:
+        """Get total cost for a workflow execution.
+
+        Args:
+            session: Database session
+            execution_id: Workflow execution ID
+
+        Returns:
+            float: Total cost in USD
+        """
+        result = await session.execute(
+            select(WorkflowExecutionModel).where(
+                WorkflowExecutionModel.id == execution_id
+            )
+        )
+        execution = result.scalar_one_or_none()
+
+        if not execution:
+            logger.warning(
+                f"Execution {execution_id} not found",
+                extra={"execution_id": execution_id},
+            )
+            return 0.0
+
+        return float(execution.cost_total_usd)
+
 
 async def check_budget(
     session: AsyncSession,
