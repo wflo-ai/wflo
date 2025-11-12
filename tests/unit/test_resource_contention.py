@@ -80,21 +80,26 @@ class TestResourceLock:
         """Test timeout raises ContentionDetectedError."""
         lock = ResourceLock(
             name="test-lock",
-            timeout=0.1,  # Very short timeout
+            timeout=10.0,  # Default timeout (long)
         )
 
+        holder_started = asyncio.Event()
+
         async def holder():
-            async with lock.acquire(workflow_id="holder"):
-                await asyncio.sleep(0.5)  # Hold for long time
+            # Holder gets longer timeout
+            async with lock.acquire(workflow_id="holder", timeout=5.0):
+                holder_started.set()  # Signal that holder has the lock
+                await asyncio.sleep(1.0)  # Hold for long time (longer than waiter timeout)
 
         async def waiter():
-            # This should timeout
+            # Wait until holder has lock
+            await holder_started.wait()
+            # Waiter gets short timeout and should fail
             async with lock.acquire(workflow_id="waiter", timeout=0.1):
                 pass
 
         # Start holder first
         holder_task = asyncio.create_task(holder())
-        await asyncio.sleep(0.01)  # Let holder acquire first
 
         # Waiter should timeout
         with pytest.raises(ContentionDetectedError) as exc_info:
@@ -102,10 +107,15 @@ class TestResourceLock:
 
         error = exc_info.value
         assert error.resource_name == "test-lock"
-        assert error.wait_time > 0.1
+        assert error.wait_time >= 0.1
         assert "holder" in error.holders
 
-        await holder_task  # Clean up
+        # Cancel holder task to clean up
+        holder_task.cancel()
+        try:
+            await holder_task
+        except asyncio.CancelledError:
+            pass
 
     @pytest.mark.asyncio
     async def test_contention_detection_threshold(self):

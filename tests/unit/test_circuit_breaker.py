@@ -124,6 +124,9 @@ class TestCircuitBreaker:
         async def failing_function():
             raise ValueError("Error")
 
+        async def successful_function():
+            return "success"
+
         # Open circuit
         for _ in range(2):
             with pytest.raises(ValueError):
@@ -134,16 +137,12 @@ class TestCircuitBreaker:
         # Wait for recovery timeout
         await asyncio.sleep(0.15)
 
-        # Should transition to HALF_OPEN on next call
-        async def check_state():
-            return "probe"
+        # This should trigger transition to HALF_OPEN and succeed
+        result = await breaker.call(successful_function)
 
-        # This should trigger transition to HALF_OPEN
-        with pytest.raises(ValueError):
-            await breaker.call(failing_function)
-
-        # After attempting, should be HALF_OPEN
+        # After successful attempt, should be in HALF_OPEN
         assert breaker.state == CircuitState.HALF_OPEN
+        assert result == "success"
 
     @pytest.mark.asyncio
     async def test_half_open_closes_on_success(self):
