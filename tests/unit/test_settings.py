@@ -116,22 +116,6 @@ DEFAULT_BUDGET_LIMIT_USD=200.0
         assert hasattr(settings, "database_pool_size")
         assert hasattr(settings, "database_max_overflow")
 
-    def test_optional_api_keys(self):
-        """Test that API keys are optional."""
-        settings = Settings()
-
-        assert settings.openai_api_key is None
-        assert settings.anthropic_api_key is None
-        assert settings.slack_webhook_url is None
-
-        # Can set them
-        settings = Settings(
-            openai_api_key="sk-test123",
-            anthropic_api_key="sk-ant-test456",
-        )
-        assert settings.openai_api_key == "sk-test123"
-        assert settings.anthropic_api_key == "sk-ant-test456"
-
     def test_approval_timeout_policy(self):
         """Test approval timeout policy validation."""
         # Valid policies

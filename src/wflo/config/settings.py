@@ -243,6 +243,10 @@ class Settings(BaseSettings):
         default=None,
         description="Anthropic API key",
     )
+    openai_model: str = Field(
+        default="gpt-5",
+        description="Default OpenAI model to use",
+    )
 
     @field_validator("database_url", mode="before")
     @classmethod

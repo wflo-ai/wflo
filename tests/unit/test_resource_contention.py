@@ -9,6 +9,13 @@ from wflo.resilience.contention import (
     get_resource_lock,
     detect_contention,
 )
+import wflo.resilience.contention as contention_module
+
+@pytest.fixture(autouse=True)
+def clear_global_locks():
+    """Clear the global resource lock registry before each test."""
+    contention_module._resource_locks.clear()
+    yield
 
 
 class TestResourceLock:

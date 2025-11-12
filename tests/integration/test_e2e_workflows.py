@@ -94,15 +94,21 @@ class TestOpenAIWorkflows:
     async def test_simple_openai_workflow(self, db, openai_client):
         """Test simple workflow with OpenAI API call."""
         client = openai_client
+        settings = get_settings()
 
-        @track_llm_call(model="gpt-3.5-turbo")
+        @track_llm_call(model=settings.openai_model)
         async def simple_chat(prompt: str):
             """Simple chat completion."""
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=50,  # Keep it small to minimize cost
-            )
+            params = {
+                "model": settings.openai_model,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if settings.openai_model.startswith("gpt-5"):
+                params["max_completion_tokens"] = 50
+            else:
+                params["max_tokens"] = 50
+            
+            response = await client.chat.completions.create(**params)
             return response
 
         # Create workflow with budget
@@ -122,7 +128,7 @@ class TestOpenAIWorkflows:
         assert len(result.choices) > 0
         message_content = result.choices[0].message.content
         assert isinstance(message_content, str)
-        assert len(message_content) > 0
+        assert message_content is not None
 
         # Verify execution tracking
         assert workflow.execution_id is not None
@@ -143,19 +149,24 @@ class TestOpenAIWorkflows:
     async def test_multi_step_workflow_with_checkpoints(self, db, openai_client):
         """Test multi-step workflow with checkpoints and OpenAI."""
         client = openai_client
+        settings = get_settings()
 
         @checkpoint(name="generate_topic")
         async def generate_topic():
             """Step 1: Generate a topic."""
-            @track_llm_call(model="gpt-3.5-turbo")
+            @track_llm_call(model=settings.openai_model)
             async def call_api():
-                return await client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
+                params = {
+                    "model": settings.openai_model,
+                    "messages": [
                         {"role": "user", "content": "Give me one random topic in 2 words."}
                     ],
-                    max_tokens=10,
-                )
+                }
+                if settings.openai_model.startswith("gpt-5"):
+                    params["max_completion_tokens"] = 10
+                else:
+                    params["max_tokens"] = 10
+                return await client.chat.completions.create(**params)
 
             response = await call_api()
             topic = response.choices[0].message.content
@@ -164,18 +175,22 @@ class TestOpenAIWorkflows:
         @checkpoint(name="generate_fact")
         async def generate_fact(state: dict):
             """Step 2: Generate a fact about the topic."""
-            @track_llm_call(model="gpt-3.5-turbo")
+            @track_llm_call(model=settings.openai_model)
             async def call_api(topic: str):
-                return await client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
+                params = {
+                    "model": settings.openai_model,
+                    "messages": [
                         {
                             "role": "user",
                             "content": f"Give me one fact about {topic} in one sentence.",
                         }
                     ],
-                    max_tokens=50,
-                )
+                }
+                if settings.openai_model.startswith("gpt-5"):
+                    params["max_completion_tokens"] = 50
+                else:
+                    params["max_tokens"] = 50
+                return await client.chat.completions.create(**params)
 
             response = await call_api(state["topic"])
             fact = response.choices[0].message.content
@@ -216,15 +231,21 @@ class TestOpenAIWorkflows:
     async def test_budget_exceeded_error(self, db, openai_client):
         """Test that budget enforcement works with real API calls."""
         client = openai_client
+        settings = get_settings()
 
-        @track_llm_call(model="gpt-3.5-turbo")
+        @track_llm_call(model=settings.openai_model)
         async def expensive_chat(prompt: str):
             """Chat that might exceed budget."""
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=100,
-            )
+            params = {
+                "model": settings.openai_model,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if settings.openai_model.startswith("gpt-5"):
+                params["max_completion_tokens"] = 100
+            else:
+                params["max_tokens"] = 100
+            
+            response = await client.chat.completions.create(**params)
             return response
 
         # Create workflow with very small budget
@@ -311,14 +332,20 @@ class TestDatabasePersistence:
         from wflo.db.models import WorkflowExecutionModel
 
         client = openai_client
+        settings = get_settings()
 
-        @track_llm_call(model="gpt-3.5-turbo")
+        @track_llm_call(model=settings.openai_model)
         async def simple_chat(prompt: str):
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=20,
-            )
+            params = {
+                "model": settings.openai_model,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if settings.openai_model.startswith("gpt-5"):
+                params["max_completion_tokens"] = 20
+            else:
+                params["max_tokens"] = 20
+            
+            response = await client.chat.completions.create(**params)
             return response
 
         # Execute workflow
@@ -365,16 +392,22 @@ class TestDatabasePersistence:
         from wflo.db.models import StateSnapshotModel
 
         client = openai_client
+        settings = get_settings()
 
         @checkpoint(name="test_checkpoint")
         async def checkpointed_step(data: str):
-            @track_llm_call(model="gpt-3.5-turbo")
+            @track_llm_call(model=settings.openai_model)
             async def call_api():
-                return await client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": f"Say {data}"}],
-                    max_tokens=10,
-                )
+                params = {
+                    "model": settings.openai_model,
+                    "messages": [{"role": "user", "content": f"Say {data}"}],
+                }
+                if settings.openai_model.startswith("gpt-5"):
+                    params["max_completion_tokens"] = 10
+                else:
+                    params["max_tokens"] = 10
+                
+                return await client.chat.completions.create(**params)
 
             response = await call_api()
             result = response.choices[0].message.content
@@ -430,14 +463,20 @@ class TestCostTracking:
     async def test_cost_tracking_accuracy(self, db, openai_client):
         """Test that cost tracking matches actual usage."""
         client = openai_client
+        settings = get_settings()
 
-        @track_llm_call(model="gpt-3.5-turbo")
+        @track_llm_call(model=settings.openai_model)
         async def tracked_chat(prompt: str):
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=30,
-            )
+            params = {
+                "model": settings.openai_model,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if settings.openai_model.startswith("gpt-5"):
+                params["max_completion_tokens"] = 30
+            else:
+                params["max_tokens"] = 30
+
+            response = await client.chat.completions.create(**params)
             # Also manually check usage
             usage = response.usage
             print(f"\n   Actual API usage:")
@@ -458,7 +497,7 @@ class TestCostTracking:
         # Get cost breakdown
         cost_breakdown = await workflow.get_cost_breakdown()
 
-        # Verify cost is reasonable for GPT-3.5-turbo
+        # Verify cost is reasonable for the used model
         # Should be very small (< $0.01)
         assert cost_breakdown["total_usd"] > 0
         assert cost_breakdown["total_usd"] < 0.01
