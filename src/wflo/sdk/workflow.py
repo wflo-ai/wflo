@@ -8,7 +8,7 @@ from wflo.sdk.context import ExecutionContext
 from wflo.cost import CostTracker
 from wflo.services.checkpoint import get_checkpoint_service
 from wflo.db.engine import get_session
-from wflo.db.models import WorkflowExecutionModel
+from wflo.db.models import WorkflowExecutionModel, WorkflowDefinitionModel
 
 logger = structlog.get_logger()
 
@@ -158,7 +158,7 @@ class WfloWorkflow:
 
         # Generic callable
         elif callable(workflow):
-            return await workflow(inputs)
+            return await workflow(**inputs)
 
         else:
             raise ValueError(f"Unsupported workflow type: {type(workflow)}")
@@ -314,13 +314,43 @@ class WfloWorkflow:
 
     async def _create_execution_record(self, inputs: Dict[str, Any]) -> None:
         """Create execution record in database."""
+        from sqlalchemy import select
+
         async for session in get_session():
+            # First, ensure workflow definition exists
+            workflow_def_id = self.name  # Use name as ID for simplicity
+            result = await session.execute(
+                select(WorkflowDefinitionModel).where(
+                    WorkflowDefinitionModel.id == workflow_def_id
+                )
+            )
+            workflow_def = result.scalar_one_or_none()
+
+            if not workflow_def:
+                # Create workflow definition if it doesn't exist
+                workflow_def = WorkflowDefinitionModel(
+                    id=workflow_def_id,
+                    name=self.name,
+                    description=f"Auto-generated workflow definition for {self.name}",
+                    steps={},  # Empty steps for now
+                    policies={"budget_usd": self.budget_usd},
+                )
+                session.add(workflow_def)
+                await session.flush()  # Ensure it's saved before creating execution
+            else:
+                # Update the budget if it changed
+                workflow_def.policies = {"budget_usd": self.budget_usd}
+                await session.flush()
+
+            # Now create execution record
             execution = WorkflowExecutionModel(
                 id=self.execution_id,
-                workflow_id=self.name,  # For now, use name as workflow ID
+                workflow_id=workflow_def_id,
                 status="RUNNING",
                 inputs=inputs,
                 cost_total_usd=0.0,
+                trace_id=self.get_trace_id(),
+                correlation_id=self.execution_id,  # Use execution_id as correlation_id for now
             )
             session.add(execution)
             await session.commit()

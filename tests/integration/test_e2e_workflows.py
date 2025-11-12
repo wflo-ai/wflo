@@ -47,36 +47,42 @@ skip_if_no_anthropic = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(scope="module")
-def db():
-    """Initialize database for module."""
-    import asyncio
+@pytest.fixture(scope="function")
+async def db():
+    """Initialize database for each test function."""
+    # Clear any existing global database engine to ensure clean state
+    import wflo.db.engine as db_module
+    if db_module._db_engine is not None:
+        try:
+            await db_module._db_engine.close()
+        except:
+            pass
+        db_module._db_engine = None
 
-    async def _init():
-        settings = get_settings()
-        db = init_db(settings)
-        # Ensure tables exist
-        from wflo.db.models import Base
+    settings = get_settings()
+    db_instance = init_db(settings)
+    # Ensure tables exist
+    from wflo.db.models import Base
 
-        engine = db.get_engine()
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        return db
+    engine = db_instance.get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-    return asyncio.run(_init())
+    yield db_instance
+
+    # Cleanup
+    await db_instance.close()
+    db_module._db_engine = None
 
 
-@pytest.fixture(scope="module", autouse=True)
-def cleanup_db(db):
-    """Cleanup database after module."""
-    import asyncio
-
-    yield
-
-    async def _cleanup():
-        await db.close()
-
-    asyncio.run(_cleanup())
+@pytest.fixture
+async def openai_client():
+    """Provide OpenAI client with proper cleanup."""
+    from openai import AsyncOpenAI
+    settings = get_settings()
+    client = AsyncOpenAI(api_key=settings.openai_api_key)
+    yield client
+    await client.close()
 
 
 @pytest.mark.asyncio
@@ -85,12 +91,9 @@ def cleanup_db(db):
 class TestOpenAIWorkflows:
     """Test end-to-end workflows with OpenAI."""
 
-    async def test_simple_openai_workflow(self, db):
+    async def test_simple_openai_workflow(self, db, openai_client):
         """Test simple workflow with OpenAI API call."""
-        from openai import AsyncOpenAI
-
-        settings = get_settings()
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
+        client = openai_client
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def simple_chat(prompt: str):
@@ -100,7 +103,7 @@ class TestOpenAIWorkflows:
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=50,  # Keep it small to minimize cost
             )
-            return response.choices[0].message.content
+            return response
 
         # Create workflow with budget
         workflow = WfloWorkflow(
@@ -115,8 +118,11 @@ class TestOpenAIWorkflows:
 
         # Verify result
         assert result is not None
-        assert isinstance(result, str)
-        assert len(result) > 0
+        assert hasattr(result, "choices")
+        assert len(result.choices) > 0
+        message_content = result.choices[0].message.content
+        assert isinstance(message_content, str)
+        assert len(message_content) > 0
 
         # Verify execution tracking
         assert workflow.execution_id is not None
@@ -132,47 +138,50 @@ class TestOpenAIWorkflows:
         print(f"\n✅ Workflow completed successfully!")
         print(f"   Execution ID: {workflow.execution_id}")
         print(f"   Cost: ${cost_breakdown['total_usd']:.4f}")
-        print(f"   Result: {result}")
+        print(f"   Result: {message_content}")
 
-    async def test_multi_step_workflow_with_checkpoints(self, db):
+    async def test_multi_step_workflow_with_checkpoints(self, db, openai_client):
         """Test multi-step workflow with checkpoints and OpenAI."""
-        from openai import AsyncOpenAI
+        client = openai_client
 
-        settings = get_settings()
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
-
-        @track_llm_call(model="gpt-3.5-turbo")
         @checkpoint(name="generate_topic")
         async def generate_topic():
             """Step 1: Generate a topic."""
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "user", "content": "Give me one random topic in 2 words."}
-                ],
-                max_tokens=10,
-            )
+            @track_llm_call(model="gpt-3.5-turbo")
+            async def call_api():
+                return await client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "user", "content": "Give me one random topic in 2 words."}
+                    ],
+                    max_tokens=10,
+                )
+
+            response = await call_api()
             topic = response.choices[0].message.content
             return {"topic": topic}
 
-        @track_llm_call(model="gpt-3.5-turbo")
         @checkpoint(name="generate_fact")
         async def generate_fact(state: dict):
             """Step 2: Generate a fact about the topic."""
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Give me one fact about {state['topic']} in one sentence.",
-                    }
-                ],
-                max_tokens=50,
-            )
+            @track_llm_call(model="gpt-3.5-turbo")
+            async def call_api(topic: str):
+                return await client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"Give me one fact about {topic} in one sentence.",
+                        }
+                    ],
+                    max_tokens=50,
+                )
+
+            response = await call_api(state["topic"])
             fact = response.choices[0].message.content
             return {**state, "fact": fact}
 
-        async def multi_step_workflow(inputs: dict):
+        async def multi_step_workflow():
             """Multi-step workflow."""
             state = await generate_topic()
             state = await generate_fact(state)
@@ -204,12 +213,9 @@ class TestOpenAIWorkflows:
         print(f"   Fact: {result['fact']}")
         print(f"   Cost: ${cost_breakdown['total_usd']:.4f}")
 
-    async def test_budget_exceeded_error(self, db):
+    async def test_budget_exceeded_error(self, db, openai_client):
         """Test that budget enforcement works with real API calls."""
-        from openai import AsyncOpenAI
-
-        settings = get_settings()
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
+        client = openai_client
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def expensive_chat(prompt: str):
@@ -219,12 +225,12 @@ class TestOpenAIWorkflows:
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=100,
             )
-            return response.choices[0].message.content
+            return response
 
         # Create workflow with very small budget
         workflow = WfloWorkflow(
             name="e2e-openai-budget-test",
-            budget_usd=0.001,  # $0.001 - very tight budget
+            budget_usd=0.0001,  # $0.0001 - extremely tight budget to force exceeding
         )
 
         # This should exceed budget
@@ -235,8 +241,8 @@ class TestOpenAIWorkflows:
 
         # Verify exception details
         error = exc_info.value
-        assert error.budget_usd == 0.001
-        assert error.spent_usd > 0.001
+        assert error.budget_usd == 0.0001
+        assert error.spent_usd > 0.0001
 
         print(f"\n✅ Budget enforcement working!")
         print(f"   Budget: ${error.budget_usd:.4f}")
@@ -299,15 +305,12 @@ class TestAnthropicWorkflows:
 class TestDatabasePersistence:
     """Test that workflow data is correctly persisted to database."""
 
-    async def test_workflow_execution_persisted(self, db):
+    async def test_workflow_execution_persisted(self, db, openai_client):
         """Test that workflow execution is saved to database."""
-        from openai import AsyncOpenAI
-
         from wflo.db.engine import get_session
         from wflo.db.models import WorkflowExecutionModel
 
-        settings = get_settings()
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
+        client = openai_client
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def simple_chat(prompt: str):
@@ -316,7 +319,7 @@ class TestDatabasePersistence:
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=20,
             )
-            return response.choices[0].message.content
+            return response
 
         # Execute workflow
         workflow = WfloWorkflow(
@@ -356,25 +359,26 @@ class TestDatabasePersistence:
 
             break  # Only need first iteration
 
-    async def test_checkpoint_persisted(self, db):
+    async def test_checkpoint_persisted(self, db, openai_client):
         """Test that checkpoints are saved to database."""
-        from openai import AsyncOpenAI
-
         from wflo.db.engine import get_session
         from wflo.db.models import StateSnapshotModel
 
-        settings = get_settings()
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
+        client = openai_client
 
-        @track_llm_call(model="gpt-3.5-turbo")
         @checkpoint(name="test_checkpoint")
         async def checkpointed_step(data: str):
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": f"Say {data}"}],
-                max_tokens=10,
-            )
-            return {"result": response.choices[0].message.content}
+            @track_llm_call(model="gpt-3.5-turbo")
+            async def call_api():
+                return await client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": f"Say {data}"}],
+                    max_tokens=10,
+                )
+
+            response = await call_api()
+            result = response.choices[0].message.content
+            return {"result": result}
 
         # Execute workflow with checkpoint
         workflow = WfloWorkflow(
@@ -401,16 +405,18 @@ class TestDatabasePersistence:
             # Should have at least one checkpoint
             assert len(checkpoints) > 0
 
-            checkpoint = checkpoints[0]
-            assert checkpoint.execution_id == execution_id
-            assert checkpoint.step_id == "test_checkpoint"
-            assert "result" in checkpoint.variables
+            saved_checkpoint = checkpoints[0]
+            assert saved_checkpoint.execution_id == execution_id
+            assert saved_checkpoint.step_id == "test_checkpoint"
+            # Checkpoint should have variables with "result" key
+            assert saved_checkpoint.variables is not None
+            assert "result" in saved_checkpoint.variables
 
             print(f"\n✅ Checkpoint persisted to database!")
-            print(f"   Checkpoint ID: {checkpoint.id}")
-            print(f"   Step ID: {checkpoint.step_id}")
-            print(f"   Version: {checkpoint.version}")
-            print(f"   Variables: {list(checkpoint.variables.keys())}")
+            print(f"   Checkpoint ID: {saved_checkpoint.id}")
+            print(f"   Step ID: {saved_checkpoint.step_id}")
+            print(f"   Version: {saved_checkpoint.version}")
+            print(f"   Variables: {list(saved_checkpoint.variables.keys()) if isinstance(saved_checkpoint.variables, dict) else 'N/A'}")
 
             break  # Only need first iteration
 
@@ -421,12 +427,9 @@ class TestDatabasePersistence:
 class TestCostTracking:
     """Test cost tracking accuracy with real API calls."""
 
-    async def test_cost_tracking_accuracy(self, db):
+    async def test_cost_tracking_accuracy(self, db, openai_client):
         """Test that cost tracking matches actual usage."""
-        from openai import AsyncOpenAI
-
-        settings = get_settings()
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
+        client = openai_client
 
         @track_llm_call(model="gpt-3.5-turbo")
         async def tracked_chat(prompt: str):
@@ -442,7 +445,7 @@ class TestCostTracking:
             print(f"     Completion tokens: {usage.completion_tokens}")
             print(f"     Total tokens: {usage.total_tokens}")
 
-            return response.choices[0].message.content
+            return response
 
         # Execute workflow
         workflow = WfloWorkflow(

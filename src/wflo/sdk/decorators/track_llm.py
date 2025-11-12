@@ -62,25 +62,64 @@ def track_llm_call(model: str):
 
                 if usage:
                     # Track cost in database
-                    cost_usd = await cost_tracker.track_llm_call(
-                        execution_id=execution_id,
-                        provider=_get_provider_from_model(model),
+                    from wflo.cost.tracker import TokenUsage
+                    from wflo.db.engine import get_session
+
+                    token_usage = TokenUsage(
                         model=model,
                         prompt_tokens=usage["prompt_tokens"],
                         completion_tokens=usage["completion_tokens"],
                     )
+                    cost_usd = cost_tracker.calculate_cost(token_usage)
+
+                    # Track in database and check budget
+                    async for session in get_session():
+                        await cost_tracker.track_cost(
+                            session=session,
+                            execution_id=execution_id,
+                            usage=token_usage,
+                        )
+                        break  # Only need first iteration
+
+                    # Check if budget exceeded after tracking cost (use fresh session)
+                    from sqlalchemy import select
+                    from wflo.db.models import WorkflowExecutionModel, WorkflowDefinitionModel
+                    from wflo.sdk.workflow import BudgetExceededError
+
+                    async for session in get_session():
+                        # Get execution to find workflow and current cost
+                        exec_result = await session.execute(
+                            select(WorkflowExecutionModel).where(
+                                WorkflowExecutionModel.id == execution_id
+                            )
+                        )
+                        execution = exec_result.scalar_one_or_none()
+
+                        if execution:
+                            # Get workflow definition to check budget
+                            wf_result = await session.execute(
+                                select(WorkflowDefinitionModel).where(
+                                    WorkflowDefinitionModel.id == execution.workflow_id
+                                )
+                            )
+                            workflow_def = wf_result.scalar_one_or_none()
+
+                            if workflow_def and "budget_usd" in workflow_def.policies:
+                                budget = workflow_def.policies["budget_usd"]
+                                if execution.cost_total_usd > budget:
+                                    raise BudgetExceededError(
+                                        f"Budget exceeded: ${execution.cost_total_usd:.4f} > ${budget:.2f}",
+                                        spent_usd=float(execution.cost_total_usd),
+                                        budget_usd=budget,
+                                    )
+
+                        break  # Only need first iteration
 
                     # Emit metrics
-                    metrics.histogram("llm_call_duration_ms", latency_ms, tags={"model": model})
-                    metrics.counter(
-                        "llm_call_tokens_total",
-                        usage["total_tokens"],
-                        tags={"model": model, "type": "total"},
-                    )
-                    metrics.counter(
-                        "llm_call_cost_usd", cost_usd, tags={"model": model}
-                    )
-                    metrics.counter("llm_calls_total", 1, tags={"model": model, "status": "success"})
+                    metrics.llm_api_calls_total.labels(model=model, status="success").inc()
+                    metrics.llm_tokens_total.labels(model=model, token_type="input").inc(usage["prompt_tokens"])
+                    metrics.llm_tokens_total.labels(model=model, token_type="output").inc(usage["completion_tokens"])
+                    metrics.llm_cost_total_usd.labels(model=model).inc(float(cost_usd))
 
                     # Structured logging
                     logger.info(
@@ -90,7 +129,7 @@ def track_llm_call(model: str):
                         prompt_tokens=usage["prompt_tokens"],
                         completion_tokens=usage["completion_tokens"],
                         total_tokens=usage["total_tokens"],
-                        cost_usd=round(cost_usd, 6),
+                        cost_usd=round(float(cost_usd), 6),
                         latency_ms=round(latency_ms, 2),
                     )
                 else:
@@ -106,7 +145,7 @@ def track_llm_call(model: str):
             except Exception as e:
                 # Track error
                 latency_ms = (time.time() - start_time) * 1000
-                metrics.counter("llm_calls_total", 1, tags={"model": model, "status": "error"})
+                metrics.llm_api_calls_total.labels(model=model, status="error").inc()
 
                 logger.error(
                     "llm_call_failed",
