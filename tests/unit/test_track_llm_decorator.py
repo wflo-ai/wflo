@@ -130,11 +130,30 @@ class TestTrackLlmCallDecorator:
         # Mock dependencies
         with patch("wflo.sdk.decorators.track_llm.CostTracker") as MockCostTracker, \
              patch("wflo.sdk.decorators.track_llm.metrics") as mock_metrics, \
-             patch("wflo.sdk.decorators.track_llm.logger") as mock_logger:
+             patch("wflo.sdk.decorators.track_llm.logger") as mock_logger, \
+             patch("wflo.db.engine.get_session") as mock_get_session:
 
             # Setup mock cost tracker
             mock_cost_tracker = MockCostTracker.return_value
             mock_cost_tracker.track_llm_call = AsyncMock(return_value=0.0234)
+            mock_cost_tracker.calculate_cost = Mock(return_value=0.0234)
+            mock_cost_tracker.track_cost = AsyncMock()
+
+            # Setup mock session
+            mock_session = Mock()
+            mock_session.commit = AsyncMock()
+
+            # Configure execute to return proper result mock
+            mock_execution = Mock()
+            mock_execution.cost_total_usd = 0.0234
+            mock_exec_result = Mock()
+            mock_exec_result.scalar_one_or_none = Mock(return_value=mock_execution)
+
+            mock_session.execute = AsyncMock(return_value=mock_exec_result)
+
+            async def mock_session_gen():
+                yield mock_session
+            mock_get_session.return_value = mock_session_gen()
 
             # Create decorated function
             @track_llm_call(model="gpt-4")
@@ -154,17 +173,18 @@ class TestTrackLlmCallDecorator:
             assert result.usage.total_tokens == 150
 
             # Verify cost tracking called
-            mock_cost_tracker.track_llm_call.assert_called_once()
-            call_args = mock_cost_tracker.track_llm_call.call_args[1]
+            mock_cost_tracker.track_cost.assert_called_once()
+            call_args = mock_cost_tracker.track_cost.call_args[1]
             assert call_args["execution_id"] == "test-exec-123"
-            assert call_args["provider"] == "openai"
-            assert call_args["model"] == "gpt-4"
-            assert call_args["prompt_tokens"] == 100
-            assert call_args["completion_tokens"] == 50
+            assert "usage" in call_args
 
-            # Verify metrics emitted
-            assert mock_metrics.histogram.called
-            assert mock_metrics.counter.called
+            # Verify cost calculation
+            assert mock_cost_tracker.calculate_cost.called
+
+            # Verify metrics emitted (Prometheus-style)
+            assert mock_metrics.llm_api_calls_total.labels.called
+            assert mock_metrics.llm_tokens_total.labels.called
+            assert mock_metrics.llm_cost_total_usd.labels.called
 
             # Verify logging
             mock_logger.info.assert_called_once()
@@ -190,12 +210,12 @@ class TestTrackLlmCallDecorator:
             log_call = mock_logger.error.call_args[0]
             assert log_call[0] == "llm_call_failed"
 
-            # Verify error metric emitted
-            error_metric_calls = [
-                call for call in mock_metrics.counter.call_args_list
-                if "status" in str(call) and "error" in str(call)
-            ]
-            assert len(error_metric_calls) > 0
+            # Verify error metric emitted (Prometheus-style)
+            assert mock_metrics.llm_api_calls_total.labels.called
+            # Verify labels was called with status="error"
+            labels_calls = mock_metrics.llm_api_calls_total.labels.call_args_list
+            error_calls = [call for call in labels_calls if "error" in str(call)]
+            assert len(error_calls) > 0
 
     async def test_decorator_no_usage_warning(self):
         """Test decorator logs warning when no usage data."""

@@ -15,8 +15,14 @@ def mock_get_session_generator(mock_session=None):
         # Add async methods that are commonly used
         mock_session.add = Mock()
         mock_session.commit = AsyncMock()
+        mock_session.flush = AsyncMock()
         mock_session.get = AsyncMock(return_value=None)
-        mock_session.execute = AsyncMock()
+
+        # Configure execute to return a proper result mock
+        # The result should have scalar_one_or_none() as a sync method
+        mock_result = Mock()
+        mock_result.scalar_one_or_none = Mock(return_value=None)
+        mock_session.execute = AsyncMock(return_value=mock_result)
 
     async def mock_gen():
         yield mock_session
@@ -233,8 +239,8 @@ class TestWfloWorkflow:
             mock_get_session.side_effect = lambda: mock_get_session_generator()
             result = await workflow.execute(mock_callable, {"input": "test"})
 
-            # Verify callable was called with inputs
-            mock_callable.assert_called_once_with({"input": "test"})
+            # Verify callable was called with inputs unpacked as kwargs
+            mock_callable.assert_called_once_with(input="test")
             assert result == {"status": "success"}
 
     async def test_execute_langgraph_workflow(self):
