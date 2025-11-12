@@ -81,13 +81,18 @@ def track_llm_call(model: str):
                         )
                         break  # Only need first iteration
 
-                    # Check if budget exceeded after tracking cost (use fresh session)
+                    # Check if budget exceeded after tracking cost
+                    from wflo.sdk.context import get_current_budget
                     from sqlalchemy import select
                     from wflo.db.models import WorkflowExecutionModel, WorkflowDefinitionModel
                     from wflo.sdk.workflow import BudgetExceededError
 
+                    # Try to get cached budget from context (performance optimization)
+                    # Eliminates 1 DB query when budget is cached by WfloWorkflow
+                    cached_budget = get_current_budget()
+
                     async for session in get_session():
-                        # Get execution to find workflow and current cost
+                        # Get execution to find current cost
                         exec_result = await session.execute(
                             select(WorkflowExecutionModel).where(
                                 WorkflowExecutionModel.id == execution_id
@@ -96,22 +101,27 @@ def track_llm_call(model: str):
                         execution = exec_result.scalar_one_or_none()
 
                         if execution:
-                            # Get workflow definition to check budget
-                            wf_result = await session.execute(
-                                select(WorkflowDefinitionModel).where(
-                                    WorkflowDefinitionModel.id == execution.workflow_id
-                                )
-                            )
-                            workflow_def = wf_result.scalar_one_or_none()
-
-                            if workflow_def and "budget_usd" in workflow_def.policies:
-                                budget = workflow_def.policies["budget_usd"]
-                                if execution.cost_total_usd > budget:
-                                    raise BudgetExceededError(
-                                        f"Budget exceeded: ${execution.cost_total_usd:.4f} > ${budget:.2f}",
-                                        spent_usd=float(execution.cost_total_usd),
-                                        budget_usd=budget,
+                            # Use cached budget if available, otherwise query workflow definition
+                            budget = cached_budget
+                            if budget is None:
+                                # Fallback: query workflow definition for budget
+                                # This maintains backward compatibility when decorator used directly
+                                wf_result = await session.execute(
+                                    select(WorkflowDefinitionModel).where(
+                                        WorkflowDefinitionModel.id == execution.workflow_id
                                     )
+                                )
+                                workflow_def = wf_result.scalar_one_or_none()
+                                if workflow_def and "budget_usd" in workflow_def.policies:
+                                    budget = workflow_def.policies["budget_usd"]
+
+                            # Check budget if available
+                            if budget is not None and execution.cost_total_usd > budget:
+                                raise BudgetExceededError(
+                                    f"Budget exceeded: ${execution.cost_total_usd:.4f} > ${budget:.2f}",
+                                    spent_usd=float(execution.cost_total_usd),
+                                    budget_usd=budget,
+                                )
 
                         break  # Only need first iteration
 

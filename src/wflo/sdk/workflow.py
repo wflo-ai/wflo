@@ -101,9 +101,11 @@ class WfloWorkflow:
         # Create execution record in database
         await self._create_execution_record(inputs)
 
-        # Set execution context
+        # Set execution context with cached budget for performance
         async with ExecutionContext(
-            execution_id=self.execution_id, workflow_name=self.name
+            execution_id=self.execution_id,
+            workflow_name=self.name,
+            budget_usd=self.budget_usd,
         ):
             try:
                 # Detect workflow type and execute accordingly
