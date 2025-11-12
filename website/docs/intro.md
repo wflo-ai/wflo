@@ -191,6 +191,6 @@ wflo Phase 1 SDK is **production-ready** and fully tested. The core features for
 ## Next Steps
 
 - [Getting Started](./getting-started.md) - Build your first wflo workflow
-- [Features](./features.md) - Explore all Phase 1 features
+- [Features](./features/overview.md) - Explore all Phase 1 features
 - [Examples](./examples.md) - See comprehensive code examples
-- [Architecture](./architecture.md) - Understand how it works
+- [Architecture](./architecture/overview.md) - Understand how it works

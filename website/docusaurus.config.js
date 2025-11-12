@@ -83,7 +83,7 @@ const config = {
               },
               {
                 label: 'Features',
-                to: '/docs/features',
+                to: '/docs/features/overview',
               },
               {
                 label: 'Examples',

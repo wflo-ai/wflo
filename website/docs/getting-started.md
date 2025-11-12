@@ -1,262 +1,109 @@
 ---
-sidebar_position: 2
+sidbar_position: 2
 title: Getting Started
-description: Quick start guide to building your first wflo workflow with budget controls
+description: Get your first wflo workflow running in 5 minutes.
 ---
 
-# Getting Started
+# Getting Started in 5 Minutes
 
-Get up and running with wflo in minutes. Build AI agent workflows with production-ready cost controls and observability.
+This guide will get you from zero to running your first `wflo`-protected workflow in less than 5 minutes. You'll see cost-tracking in action without needing to configure a database.
 
-## Prerequisites
+## Step 1: Install `wflo`
 
-- Python 3.11 or higher
-- PostgreSQL database (local or Supabase)
-- API keys for LLM providers (OpenAI, Anthropic, etc.)
-- Git
-
-## Installation
-
-### From PyPI (Coming Soon)
-
-```bash
-pip install wflo
-```
-
-### From Source (Current)
+First, get the project code and install the dependencies.
 
 ```bash
 # Clone the repository
 git clone https://github.com/wflo-ai/wflo.git
 cd wflo
 
-# Install with Poetry
+# Install with Poetry (recommended)
 poetry install
-
-# Or with pip
-pip install -e ".[dev]"
 ```
 
-## Database Setup
+## Step 2: Set Your API Key
 
-wflo requires PostgreSQL for state persistence and checkpointing.
-
-### Option 1: Supabase (Recommended)
-
-Supabase provides managed PostgreSQL with authentication and is ideal for production.
-
-1. **Create Supabase Project**
-   - Sign up at https://supabase.com
-   - Create new project
-   - Save your database password
-
-2. **Get Connection String**
-   - Go to Settings → Database
-   - Copy the connection URI
-   - Format: \`postgresql://postgres:PASSWORD@db.xxx.supabase.co:5432/postgres\`
-
-3. **Configure Environment**
-   ```bash
-   # Copy environment template
-   cp .env.example .env
-
-   # Edit .env and set:
-   DATABASE_URL=postgresql+asyncpg://postgres:YOUR-PASSWORD@db.xxxxxxxxxxxxxxxxxxxx.supabase.co:5432/postgres
-   ```
-
-4. **Initialize Database**
-   ```bash
-   python scripts/init_db.py
-   ```
-
-5. **Test Connection**
-   ```bash
-   python scripts/test_supabase_connection.py
-   ```
-
-**See [Supabase Setup Guide](./supabase-setup.md) for detailed instructions.**
-
-### Option 2: Local PostgreSQL
-
-1. **Install PostgreSQL**
-   ```bash
-   # macOS
-   brew install postgresql
-   brew services start postgresql
-
-   # Ubuntu/Debian
-   sudo apt-get install postgresql
-   sudo systemctl start postgresql
-   ```
-
-2. **Create Database**
-   ```bash
-   createdb wflo
-   ```
-
-3. **Configure Environment**
-   ```bash
-   cp .env.example .env
-
-   # Edit .env:
-   DATABASE_URL=postgresql+asyncpg://localhost:5432/wflo
-   ```
-
-4. **Initialize Database**
-   ```bash
-   python scripts/init_db.py
-   ```
-
-## Set Up API Keys
+`wflo` loads credentials from a `.env` file in your project root.
 
 ```bash
-# Edit .env and add your API keys:
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+# Copy the environment template
+cp .env.example .env
+
+# Edit the .env file and add your OpenAI API key
+echo "OPENAI_API_KEY=sk-..." >> .env
 ```
 
-## Your First Workflow
+## Step 3: Run Your First Protected Workflow
 
-Create \`examples/my_first_workflow.py\`:
+The code below defines a simple function that calls OpenAI. The `@track_llm_call` decorator and the `WfloWorkflow` wrapper add cost control and observability without changing the core logic.
 
-```python
-import asyncio
-from openai import AsyncOpenAI
-from wflo.sdk.workflow import WfloWorkflow, BudgetExceededError
-from wflo.sdk.decorators.track_llm import track_llm_call
-from wflo.config import get_settings
-from wflo.db.engine import init_db
+1.  Save this code as `my_first_workflow.py` in the root of the `wflo` project.
 
-# Initialize database
-settings = get_settings()
-db = init_db(settings)
+    ```python
+    import asyncio
+    from openai import AsyncOpenAI
+    from wflo.config import get_settings
+    from wflo.sdk.workflow import WfloWorkflow
+    from wflo.sdk.decorators.track_llm import track_llm_call
 
-client = AsyncOpenAI()
+    # Get settings, which loads the .env file automatically
+    settings = get_settings()
+    client = AsyncOpenAI()
 
-@track_llm_call(model="gpt-3.5-turbo")
-async def generate_greeting(name: str):
-    """Generate a personalized greeting using GPT-3.5."""
-    response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": f"Generate a friendly greeting for {name}"}
-        ],
-        max_tokens=50,
-    )
-    return response.choices[0].message.content
+    @track_llm_call(model=settings.openai_model)
+    async def generate_greeting(name: str):
+        """A simple function that calls an LLM."""
+        response = await client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[{"role": "user", "content": f"Generate a friendly, one-sentence greeting for {name}."}],
+            max_tokens=50,
+        )
+        return response.choices[0].message.content
 
-async def main():
-    # Create workflow with budget
-    workflow = WfloWorkflow(
-        name="hello-world",
-        budget_usd=0.10,  # \$0.10 maximum spend
-    )
-
-    try:
-        # Execute workflow
-        result = await workflow.execute(
-            generate_greeting,
-            {"name": "Alice"}
+    async def main():
+        # Create a workflow with a name and a budget
+        workflow = WfloWorkflow(
+            name="hello-world-workflow",
+            budget_usd=0.05,  # Set a 5-cent budget
         )
 
-        print(f"\n✅ Workflow completed!")
-        print(f"Result: {result}")
+        # Execute the function through the wflo wrapper
+        result = await workflow.execute(generate_greeting, {"name": "Alice"})
 
-        # Check costs
-        breakdown = await workflow.get_cost_breakdown()
+        print(f"\n✅ Agent Result: '{result}'")
+
+        # After execution, get the cost breakdown
+        cost_breakdown = await workflow.get_cost_breakdown()
         print(f"\n💰 Cost Analysis:")
-        print(f"  Total: \${breakdown['total_usd']:.4f}")
-        print(f"  Budget: \${breakdown['budget_usd']:.2f}")
-        print(f"  Remaining: \${breakdown['remaining_usd']:.4f}")
+        print(f"   Total Cost: ${cost_breakdown['total_usd']:.6f}")
+        print(f"   Budget:     ${cost_breakdown['budget_usd']:.2f}")
 
-        # Execution tracking
-        print(f"\n🔍 Execution ID: {workflow.execution_id}")
+    if __name__ == "__main__":
+        asyncio.run(main())
+    ```
 
-    except BudgetExceededError as e:
-        print(f"❌ Budget exceeded!")
-        print(f"  Spent: \${e.spent_usd:.4f}")
-        print(f"  Budget: \${e.budget_usd:.2f}")
+2.  Now, run the file from your terminal:
 
-    finally:
-        await db.close()
+    ```bash
+    poetry run python my_first_workflow.py
+    ```
 
-if __name__ == "__main__":
-    asyncio.run(main())
+### Expected Output
+
+You will see the result from the agent, followed by the cost analysis provided by `wflo`.
+
 ```
-
-Run it:
-
-```bash
-export OPENAI_API_KEY=sk-...
-python examples/my_first_workflow.py
-```
-
-Expected output:
-```
-✅ Workflow completed!
-Result: Hello Alice! Hope you're having a wonderful day!
+✅ Agent Result: 'Hello Alice, it's a pleasure to meet you!'
 
 💰 Cost Analysis:
-  Total: \$0.0008
-  Budget: \$0.10
-  Remaining: \$0.0992
-
-🔍 Execution ID: exec-a1b2c3d4e5f6
+   Total Cost: $0.000084
+   Budget:     $0.05
 ```
+
+**Congratulations!** You've just run your first workflow with `wflo`, complete with cost tracking and budget enforcement. Notice you didn't need to write any complex code to track tokens or calculate costs—the `@track_llm_call` decorator handled it automatically.
 
 ## Next Steps
 
-- **[Features](./features.md)** - Explore all Phase 1 features
-- **[Examples](./examples.md)** - See comprehensive examples
-- **[Supabase Setup](./supabase-setup.md)** - Detailed Supabase guide
-- **[Architecture](./architecture.md)** - Understand how wflo works
-
-## Troubleshooting
-
-### Database Connection Issues
-
-If you see connection errors:
-
-1. **Check DATABASE_URL format**
-   ```bash
-   # Should have +asyncpg driver
-   postgresql+asyncpg://user:pass@host:5432/db
-   ```
-
-2. **Verify database exists**
-   ```bash
-   python scripts/test_supabase_connection.py
-   ```
-
-3. **Initialize database tables**
-   ```bash
-   python scripts/init_db.py
-   ```
-
-### API Key Issues
-
-If you see authentication errors:
-
-1. **Verify API keys are set**
-   ```bash
-   echo \$OPENAI_API_KEY
-   ```
-
-2. **Check .env file**
-   ```bash
-   cat .env | grep API_KEY
-   ```
-
-### Budget Exceeded Errors
-
-If workflows fail with \`BudgetExceededError\`:
-
-1. **Increase budget** in \`WfloWorkflow\` initialization
-2. **Use cheaper models** (gpt-3.5-turbo instead of gpt-4)
-3. **Reduce max_tokens** in LLM calls
-
-## Getting Help
-
-- **GitHub Issues**: https://github.com/wflo-ai/wflo/issues
-- **Documentation**: https://docs.wflo.ai
-- **Examples**: Check \`examples/\` directory in the repository
+*   **Enable Persistence:** By default, your workflow history isn't saved. Follow the **[Enabling Persistence Guide](./guides/enabling-persistence.md)** to set up a database for long-term execution tracking and checkpointing.
+*   **Explore Features:** Learn more about what you can do with `wflo` in the **[Features](./features/overview.md)** guide.
+*   **See More Examples:** Check out the `examples/` directory for integrations with LangGraph, CrewAI, and more.

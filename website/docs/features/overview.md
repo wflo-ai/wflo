@@ -405,6 +405,6 @@ Features coming in future phases:
 
 ## Next Steps
 
-- [Getting Started](./getting-started.md) - Build your first workflow
-- [Examples](./examples.md) - See comprehensive code examples
-- [Architecture](./architecture.md) - Understand the internals
+- [Getting Started](../getting-started.md) - Build your first workflow
+- [Examples](../examples.md) - See comprehensive code examples
+- [Architecture](../architecture/overview.md) - Understand the internals
